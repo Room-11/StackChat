@@ -53,14 +53,14 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param Room|Identifier|string $identifier
-     * @throws InvalidRoomException
+     * @throws InvalidRoomIdentifierException
      */
     public function remove($identifier)
     {
         list($host, $id) = $this->normalizeIdentifier($identifier);
 
         if (!isset($this->rooms[$host][$id])) {
-            throw new InvalidRoomException("Unknown room identifier: {$host}#{$id}");
+            throw new InvalidRoomIdentifierException("Unknown room identifier: {$host}#{$id}");
         }
 
         unset($this->rooms[$host][$id]);
@@ -70,14 +70,14 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
     /**
      * @param Room|Identifier|string $identifier
      * @return null|Room
-     * @throws InvalidRoomException
+     * @throws InvalidRoomIdentifierException
      */
     public function get($identifier)
     {
         list($host, $id) = $this->normalizeIdentifier($identifier);
 
         if (!isset($this->rooms[$host][$id])) {
-            throw new InvalidRoomException("Unknown room identifier: {$host}#{$id}");
+            throw new InvalidRoomIdentifierException("Unknown room identifier: {$host}#{$id}");
         }
 
         return $this->rooms[$host][$id] ?? null;
@@ -168,12 +168,12 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
     public function offsetSet($identifier, $room)
     {
         if (!$room instanceof Room) {
-            throw new InvalidRoomException("Rooms must be instances of " . Room::class);
+            throw new InvalidRoomIdentifierException("Rooms must be instances of " . Room::class);
         }
 
         list($host, $id) = $this->normalizeIdentifier($identifier);
         if ($host !== $room->getIdentifier()->getHost() || $id !== $room->getIdentifier()->getId()) {
-            throw new InvalidRoomException("Identifying key must match room identifier");
+            throw new InvalidRoomIdentifierException("Identifying key must match room identifier");
         }
 
         $this->add($room);

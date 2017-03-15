@@ -19,6 +19,7 @@
     }
   ],
   "autoload": {
+    "files": ["src/constants.php"],
     "psr-4": {
       "Room11\\StackExchangeChatClient\\": "src/"
     }

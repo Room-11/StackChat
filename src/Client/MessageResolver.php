@@ -4,8 +4,8 @@ namespace Room11\StackExchangeChatClient\Client;
 
 use Amp\Promise;
 use Room11\StackExchangeChatClient\Room\Room;
-use function Amp\resolve;
 use const Room11\StackExchangeChatClient\DNS_NAME_EXPR;
+use function Amp\resolve;
 
 class MessageResolver
 {

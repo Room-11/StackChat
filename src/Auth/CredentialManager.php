@@ -1,5 +1,6 @@
-<?php  declare(strict_types=1);
-namespace Room11\StackExchangeChatClient\Room;
+<?php declare(strict_types=1);
+
+namespace Room11\StackExchangeChatClient\Auth;
 
 use Room11\OpenId\Credentials;
 

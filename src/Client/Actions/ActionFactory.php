@@ -3,10 +3,10 @@
 namespace Room11\StackExchangeChatClient\Client\Actions;
 
 use Amp\Artax\Request;
-use Room11\StackExchangeChatClient\Client\PostedMessageTracker;
-use Room11\StackExchangeChatClient\Message\Command;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 use Psr\Log\LoggerInterface as Logger;
+use Room11\StackExchangeChatClient\Client\PostedMessageTracker;
+use Room11\StackExchangeChatClient\Message;
+use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
 class ActionFactory
 {
@@ -19,9 +19,9 @@ class ActionFactory
         $this->tracker = $tracker;
     }
 
-    public function createPostMessageAction(Request $request, ChatRoom $room, string $text, ?Command $originatingCommand): PostMessageAction
+    public function createPostMessageAction(Request $request, ChatRoom $room, string $text, ?Message $parentMessage): PostMessageAction
     {
-        return new PostMessageAction($this->logger, $request, $room, $this->tracker, $text, $originatingCommand);
+        return new PostMessageAction($this->logger, $request, $room, $this->tracker, $text, $parentMessage);
     }
 
     public function createEditMessageAction(Request $request, ChatRoom $room): EditMessageAction

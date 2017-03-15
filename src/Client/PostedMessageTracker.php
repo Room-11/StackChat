@@ -4,9 +4,9 @@ namespace Room11\StackExchangeChatClient\Client;
 
 use Ds\Deque;
 use Room11\StackExchangeChatClient\Entities\PostedMessage;
+use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
 use Room11\StackExchangeChatClient\Room\InvalidRoomIdentifierException;
 use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
 use const Room11\StackExchangeChatClient\ROOM_IDENTIFIER_EXPR;
 
 class PostedMessageTracker

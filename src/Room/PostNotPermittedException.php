@@ -4,4 +4,4 @@ namespace Room11\StackExchangeChatClient\Room;
 
 use Room11\StackExchangeChatClient\Exception;
 
-class UserNotAcceptableException extends Exception {}
+class PostNotPermittedException extends Exception {}

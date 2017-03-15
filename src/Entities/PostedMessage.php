@@ -2,25 +2,24 @@
 
 namespace Room11\StackExchangeChatClient\Entities;
 
-use Room11\StackExchangeChatClient\Client\IdentifiableMessage;
-use Room11\StackExchangeChatClient\Message\Command;
+use Room11\StackExchangeChatClient\Message;
 use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
-class PostedMessage implements IdentifiableMessage
+class PostedMessage implements Message
 {
     private $room;
     private $id;
     private $timestamp;
     private $text;
-    private $originatingCommand;
+    private $parentMessage;
 
-    public function __construct(ChatRoom $room, int $id, int $timestamp, string $text, ?Command $originatingCommand)
+    public function __construct(ChatRoom $room, int $id, int $timestamp, string $text, ?Message $parentMessage)
     {
         $this->room = $room;
         $this->id = $id;
         $this->timestamp = new \DateTimeImmutable("@{$timestamp}");
         $this->text = $text;
-        $this->originatingCommand = $originatingCommand;
+        $this->parentMessage = $parentMessage;
     }
 
     public function getRoom(): ChatRoom
@@ -38,9 +37,9 @@ class PostedMessage implements IdentifiableMessage
         return $this->text;
     }
 
-    public function getOriginatingCommand(): ?Command
+    public function getParentMessage(): ?Message
     {
-        return $this->originatingCommand;
+        return $this->parentMessage;
     }
 
     public function getTimestamp(): \DateTimeImmutable

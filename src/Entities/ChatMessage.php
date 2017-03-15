@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Message;
+namespace Room11\StackExchangeChatClient\Entities;
 
-use Room11\StackExchangeChatClient\Client\IdentifiableMessage;
 use Room11\StackExchangeChatClient\Event\DeleteMessage;
 use Room11\StackExchangeChatClient\Event\EditMessage;
 use Room11\StackExchangeChatClient\Event\MessageEvent;
 use Room11\StackExchangeChatClient\Event\NewMessage;
 use Room11\StackExchangeChatClient\Event\ReplyMessage;
+use Room11\StackExchangeChatClient\Message;
 use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
-class Message implements IdentifiableMessage
+class ChatMessage implements Message
 {
     const TYPE_NEW = 1;
     const TYPE_EDIT = 2;
@@ -24,17 +24,14 @@ class Message implements IdentifiableMessage
     ];
 
     private $event;
-
     private $room;
-
     private $type;
-
     private $text;
 
-    public function __construct(MessageEvent $event, ChatRoom $room)
+    public function __construct(MessageEvent $event)
     {
         $this->event = $event;
-        $this->room = $room;
+        $this->room = $event->getRoom();
         $this->type = self::$eventTypeMap[$event->getTypeId()];
     }
 

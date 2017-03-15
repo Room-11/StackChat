@@ -8,8 +8,8 @@ use Amp\Pause;
 use Amp\Promise;
 use Ds\Queue;
 use ExceptionalJSON\DecodeErrorException as JSONDecodeErrorException;
-use Room11\StackExchangeChatClient\Client\Actions\Action;
 use Psr\Log\LoggerInterface as Logger;
+use Room11\StackExchangeChatClient\Client\Actions\Action;
 use function Amp\resolve;
 
 class ActionExecutor

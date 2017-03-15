@@ -6,12 +6,12 @@ use Amp\Websocket;
 use Amp\Websocket\Endpoint as WebSocketEndpoint;
 use Amp\Websocket\Message as WebSocketMessage;
 use ExceptionalJSON\DecodeErrorException as JSONDecodeErrorException;
+use Psr\Log\LoggerInterface as Logger;
+use Room11\StackExchangeChatClient\Entities\ChatMessage;
 use Room11\StackExchangeChatClient\Event\Builder as EventBuilder;
 use Room11\StackExchangeChatClient\Event\Event;
+use Room11\StackExchangeChatClient\Event\MessageEvent;
 use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackExchangeChatClient\Room\PresenceManager;
-use Room11\StackExchangeChatClient\Log\Level;
-use Room11\StackExchangeChatClient\Log\Logger;
 use function Amp\cancel;
 use function Amp\once;
 
@@ -22,7 +22,6 @@ class Handler implements Websocket
     private $eventBuilder;
     private $eventDispatcher;
     private $logger;
-    private $presenceManager;
     private $roomIdentifier;
 
     /**
@@ -36,20 +35,18 @@ class Handler implements Websocket
         EventBuilder $eventBuilder,
         EventDispatcher $globalEventDispatcher,
         Logger $logger,
-        PresenceManager $presenceManager,
         ChatRoomIdentifier $roomIdentifier
     ) {
         $this->eventBuilder = $eventBuilder;
         $this->eventDispatcher = $globalEventDispatcher;
         $this->logger = $logger;
-        $this->presenceManager = $presenceManager;
         $this->roomIdentifier = $roomIdentifier;
     }
 
     private function clearTimeoutWatcher()
     {
         if ($this->timeoutWatcherId !== null) {
-            $this->logger->log(Level::DEBUG, "Cancelling timeout watcher #{$this->timeoutWatcherId}");
+            $this->logger->debug("Cancelling timeout watcher #{$this->timeoutWatcherId}");
 
             cancel($this->timeoutWatcherId);
             $this->timeoutWatcherId = null;
@@ -59,12 +56,12 @@ class Handler implements Websocket
     private function setTimeoutWatcher(int $secs = self::HEARTBEAT_TIMEOUT_SECONDS)
     {
         $this->timeoutWatcherId = once(function() {
-            $this->logger->log(Level::DEBUG, "Connection to {$this->roomIdentifier} timed out");
+            $this->logger->debug("Connection to {$this->roomIdentifier} timed out");
 
             $this->endpoint->close();
         }, $secs * 1000);
 
-        $this->logger->log(Level::DEBUG, "Created timeout watcher #{$this->timeoutWatcherId}");
+        $this->logger->debug("Created timeout watcher #{$this->timeoutWatcherId}");
     }
 
     public function getEndpoint(): WebsocketEndpoint
@@ -75,7 +72,7 @@ class Handler implements Websocket
     public function onOpen(WebsocketEndpoint $endpoint, array $headers)
     {
         try {
-            $this->logger->log(Level::DEBUG, "Connection to {$this->roomIdentifier} established");
+            $this->logger->debug("Connection to {$this->roomIdentifier} established");
             $this->endpoint = $endpoint;
 
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
@@ -83,8 +80,8 @@ class Handler implements Websocket
             // probably us)
             $this->setTimeoutWatcher(2);
         } catch (\Throwable $e) {
-            $this->logger->log(
-                Level::DEBUG, "Something went generally wrong while opening connection to {$this->roomIdentifier}: $e"
+            $this->logger->debug(
+                "Something went generally wrong while opening connection to {$this->roomIdentifier}: $e"
             );
         }
     }
@@ -94,7 +91,7 @@ class Handler implements Websocket
         try {
             $rawWebsocketMessage = yield $websocketMessage;
 
-            $this->logger->log(Level::DEBUG, "Websocket message received on connection to {$this->roomIdentifier}", $rawWebsocketMessage);
+            $this->logger->debug("Websocket message received on connection to {$this->roomIdentifier}", $rawWebsocketMessage);
 
             $this->clearTimeoutWatcher();
             $this->setTimeoutWatcher();
@@ -102,20 +99,24 @@ class Handler implements Websocket
             try {
                 $data = json_try_decode($rawWebsocketMessage, true);
             } catch (JSONDecodeErrorException $e) {
-                $this->logger->log(Level::ERROR, "Error decoding JSON message from server: {$e->getMessage()}");
+                $this->logger->error("Error decoding JSON message from server: {$e->getMessage()}");
                 return;
             }
 
             /** @var Event[] $events */
             $events = yield from $this->eventBuilder->build($data, $this->roomIdentifier);
-            $this->logger->log(Level::DEBUG, count($events) . " events targeting {$this->roomIdentifier} to process");
+            $this->logger->debug(count($events) . " events targeting {$this->roomIdentifier} to process");
 
             foreach ($events as $event) {
                 yield $this->eventDispatcher->processWebSocketEvent($event);
+
+                if ($event instanceof MessageEvent) {
+                    $this->eventDispatcher->processMessageEvent(new ChatMessage($event));
+                }
             }
         } catch (\Throwable $e) {
-            $this->logger->log(
-                Level::DEBUG, "Something went generally wrong while processing events for {$this->roomIdentifier}: $e"
+            $this->logger->debug(
+                "Something went generally wrong while processing events for {$this->roomIdentifier}: $e"
             );
         }
     }
@@ -125,11 +126,11 @@ class Handler implements Websocket
         try {
             $this->clearTimeoutWatcher();
 
-            $this->logger->log(Level::DEBUG, "Connection to {$this->roomIdentifier} closed");
-            yield $this->presenceManager->processDisconnect($this->roomIdentifier);
+            $this->logger->debug("Connection to {$this->roomIdentifier} closed");
+            yield $this->eventDispatcher->processDisconnect($this->roomIdentifier);
         } catch (\Throwable $e) {
-            $this->logger->log(
-                Level::DEBUG, "Something went generally wrong while handling closure of connection to {$this->roomIdentifier}: $e"
+            $this->logger->debug(
+                "Something went generally wrong while handling closure of connection to {$this->roomIdentifier}: $e"
             );
         }
     }

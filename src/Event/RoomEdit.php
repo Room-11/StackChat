@@ -4,7 +4,7 @@ namespace Room11\StackExchangeChatClient\Event;
 
 use Room11\StackExchangeChatClient\Event\Traits\RoomSource;
 use Room11\StackExchangeChatClient\Event\Traits\UserSource;
-use Room11\StackExchangeChatClient\Chat\Room\Room as ChatRoom;
+use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
 class RoomEdit extends BaseEvent implements RoomSourcedEvent, UserSourcedEvent
 {

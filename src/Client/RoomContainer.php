@@ -4,7 +4,7 @@ namespace Room11\StackExchangeChatClient\Client;
 
 use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
-interface ChatRoomContainer
+interface RoomContainer
 {
     function getRoom(): ChatRoom;
 }

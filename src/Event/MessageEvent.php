@@ -11,24 +11,10 @@ abstract class MessageEvent extends BaseEvent implements UserSourcedEvent, RoomS
 {
     use RoomSource, UserSource;
 
-    /**
-     * @var int
-     */
     private $messageId;
-
-    /**
-     * @var \DOMDocument
-     */
+    private $rawMessageContent;
     private $messageContent;
-
-    /**
-     * @var int
-     */
     private $parentId;
-
-    /**
-     * @var bool
-     */
     private $showParent;
 
     public function __construct(array $data, ChatRoom $room)
@@ -41,10 +27,7 @@ abstract class MessageEvent extends BaseEvent implements UserSourcedEvent, RoomS
         $this->userName = (string)$data['user_name'];
 
         $this->messageId = (int)$data['message_id'];
-        $this->messageContent = domdocument_load_html(
-            '<p>' . ($data['content'] ?? '') . '</p>',
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-        );
+        $this->rawMessageContent = $data['content'] ?? '';
 
         $this->parentId = (int)($data['parent_id'] ?? -1);
         $this->showParent = (bool)($data['show_parent'] ?? false);
@@ -55,8 +38,20 @@ abstract class MessageEvent extends BaseEvent implements UserSourcedEvent, RoomS
         return $this->messageId;
     }
 
+    public function getRawMessageContent(): string
+    {
+        return $this->rawMessageContent;
+    }
+
     public function getMessageContent(): \DOMDocument
     {
+        if (!isset($this->messageContent)) {
+            $this->messageContent = domdocument_load_html(
+                "<p>{$this->rawMessageContent}</p>",
+                LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+            );
+        }
+
         return $this->messageContent;
     }
 

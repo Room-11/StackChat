@@ -13,35 +13,32 @@ use function Amp\websocket;
 class Connector
 {
     private $authenticator;
-    private $roomFactory;
     private $handshakeFactory;
     private $handlerFactory;
 
     public function __construct(
         Authenticator $authenticator,
-        RoomFactory $roomFactory,
         WebSocketHandshakeFactory $handshakeFactory,
         WebSocketHandlerFactory $handlerFactory
     ) {
         $this->authenticator = $authenticator;
-        $this->roomFactory = $roomFactory;
         $this->handshakeFactory = $handshakeFactory;
         $this->handlerFactory = $handlerFactory;
     }
 
-    public function connect(Identifier $identifier, PresenceManager $presenceManager, bool $permanent): Promise
+    public function connect(Identifier $identifier, bool $permanent): Promise
     {
-        return resolve(function() use($identifier, $presenceManager, $permanent) {
+        return resolve(function() use($identifier, $permanent) {
             /** @var Session $sessionInfo */
             $sessionInfo = yield $this->authenticator->getRoomSessionInfo($identifier);
 
             $handshake = $this->handshakeFactory->build($sessionInfo->getWebSocketUrl())
                 ->setHeader('Origin', 'https://' . $identifier->getHost());
-            $handler = $this->handlerFactory->build($identifier, $presenceManager);
+            $handler = $this->handlerFactory->build($identifier);
 
             yield websocket($handler, $handshake);
 
-            return $this->roomFactory->build($identifier, $sessionInfo, $handler, $presenceManager, $permanent);
+            return new Room($identifier, $sessionInfo, $handler, $permanent);
         });
     }
 }

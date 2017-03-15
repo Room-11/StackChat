@@ -2,4 +2,4 @@
 
 namespace Room11\StackExchangeChatClient;
 
-class Exception extends \Exception {}
+abstract class Exception extends \Exception {}

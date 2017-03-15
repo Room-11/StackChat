@@ -3,19 +3,18 @@
 namespace Room11\StackExchangeChatClient\Client\Actions;
 
 use Amp\Artax\Request as HttpRequest;
+use Psr\Log\LoggerInterface as Logger;
 use Room11\StackExchangeChatClient\Client\MessagePostFailureException;
 use Room11\StackExchangeChatClient\Client\PostedMessageTracker;
 use Room11\StackExchangeChatClient\Entities\PostedMessage;
-use Room11\StackExchangeChatClient\Message\Command;
+use Room11\StackExchangeChatClient\Message;
 use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
-use Room11\StackExchangeChatClient\Log\Level;
-use Room11\StackExchangeChatClient\Log\Logger;
 
 class PostMessageAction extends Action
 {
     private $tracker;
     private $text;
-    private $originatingCommand;
+    private $parentMessage;
 
     public function __construct(
         Logger $logger,
@@ -23,13 +22,13 @@ class PostMessageAction extends Action
         ChatRoom $room,
         PostedMessageTracker $tracker,
         string $text,
-        ?Command $originatingCommand
+        ?Message $parentMessage
     ) {
         parent::__construct($logger, $request, $room);
 
         $this->tracker = $tracker;
         $this->text = $text;
-        $this->originatingCommand = $originatingCommand;
+        $this->parentMessage = $parentMessage;
     }
 
     public function getExceptionClassName(): string
@@ -47,7 +46,7 @@ class PostMessageAction extends Action
     public function processResponse($response, int $attempt): int
     {
         if (isset($response["id"], $response["time"])) {
-            $postedMessage = new PostedMessage($this->room, $response["id"], $response["time"], $this->text, $this->originatingCommand);
+            $postedMessage = new PostedMessage($this->room, $response["id"], $response["time"], $this->text, $this->parentMessage);
 
             $this->tracker->pushMessage($postedMessage);
             $this->succeed($postedMessage);
@@ -56,7 +55,7 @@ class PostMessageAction extends Action
         }
 
         if (!array_key_exists('id', $response)) {
-            $this->logger->log(Level::ERROR, 'A JSON response that I don\'t understand was received', $response);
+            $this->logger->error('A JSON response that I don\'t understand was received', ['response' => $response]);
             $this->fail(new MessagePostFailureException("Invalid response from server"));
 
             return self::FAILURE;
@@ -66,7 +65,7 @@ class PostMessageAction extends Action
         // I think this happens when we repeat ourselves too quickly
         // todo: remove this if we don't get any more for a week or two (repeat message guard should prevent it)
         $delay = $attempt * 1000;
-        $this->logger->log(Level::ERROR, "WARN: Got a null message post response, waiting for {$delay}ms before trying again");
+        $this->logger->error("WARN: Got a null message post response, waiting for {$delay}ms before trying again");
 
         return $delay;
     }

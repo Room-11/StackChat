@@ -5,12 +5,12 @@ namespace Room11\StackExchangeChatClient\Client\Actions;
 use Amp\Artax\Request as HttpRequest;
 use Amp\Deferred;
 use Amp\Promisor;
-use Room11\StackExchangeChatClient\Client\ActionExecutionFailureException;
-use Room11\StackExchangeChatClient\Client\ChatRoomContainer;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 use Psr\Log\LoggerInterface as Logger;
+use Room11\StackExchangeChatClient\Client\ActionExecutionFailureException;
+use Room11\StackExchangeChatClient\Client\RoomContainer;
+use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
 
-abstract class Action implements Promisor, ChatRoomContainer
+abstract class Action implements Promisor, RoomContainer
 {
     const SUCCESS = -1;
     const FAILURE = 0;

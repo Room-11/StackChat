@@ -7,22 +7,20 @@ use Amp\Artax\HttpClient;
 use Amp\Artax\Request as HttpRequest;
 use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
+use Psr\Log\LoggerInterface as Logger;
 use Room11\DOMUtils\ElementNotFoundException;
 use Room11\StackExchangeChatClient\Client\Actions\ActionFactory;
-use Room11\StackExchangeChatClient\Endpoint as ChatRoomEndpoint;
+use Room11\StackExchangeChatClient\Endpoint;
 use Room11\StackExchangeChatClient\EndpointURLResolver;
 use Room11\StackExchangeChatClient\Entities\ChatUser;
 use Room11\StackExchangeChatClient\Entities\MainSiteUser;
-use Room11\StackExchangeChatClient\Entities\PostedMessage;
-use Room11\StackExchangeChatClient\Message\Command;
-use Room11\StackExchangeChatClient\Message\Message;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackExchangeChatClient\Room\IdentifierFactory as ChatRoomIdentifierFactory;
-use Room11\StackExchangeChatClient\Room\NotApprovedException as RoomNotApprovedException;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
-use Room11\StackExchangeChatClient\Room\StatusManager;
-use Room11\StackExchangeChatClient\Room\UserAccessType as ChatRoomAccessType;
-use Psr\Log\LoggerInterface as Logger;
+use Room11\StackExchangeChatClient\Message;
+use Room11\StackExchangeChatClient\Room\Identifier as RoomIdentifier;
+use Room11\StackExchangeChatClient\Room\IdentifierFactory as RoomIdentifierFactory;
+use Room11\StackExchangeChatClient\Room\PostNotPermittedException;
+use Room11\StackExchangeChatClient\Room\PostPermissionManager;
+use Room11\StackExchangeChatClient\Room\Room;
+use Room11\StackExchangeChatClient\Room\UserAccessType as RoomAccessType;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;
@@ -40,7 +38,7 @@ class ChatClient
     private $actionFactory;
     private $urlResolver;
     private $identifierFactory;
-    private $roomStatusManager;
+    private $postPermissionManager;
 
     public function __construct(
         HttpClient $httpClient,
@@ -48,8 +46,8 @@ class ChatClient
         ActionExecutor $actionExecutor,
         ActionFactory $actionFactory,
         EndpointURLResolver $urlResolver,
-        ChatRoomIdentifierFactory $identifierFactory,
-        StatusManager $roomStatusManager
+        RoomIdentifierFactory $identifierFactory,
+        PostPermissionManager $postPermissionManager
     ) {
         $this->httpClient = $httpClient;
         $this->logger = $logger;
@@ -57,7 +55,7 @@ class ChatClient
         $this->actionFactory = $actionFactory;
         $this->urlResolver = $urlResolver;
         $this->identifierFactory = $identifierFactory;
-        $this->roomStatusManager = $roomStatusManager;
+        $this->postPermissionManager = $postPermissionManager;
     }
 
     private function checkAndNormaliseEncoding(string $text): string
@@ -103,11 +101,11 @@ class ChatClient
         return $text;
     }
 
-    private function getIdentifierFromArg($arg): ChatRoomIdentifier
+    private function getIdentifierFromArg($arg): RoomIdentifier
     {
-        if ($arg instanceof ChatRoom) {
+        if ($arg instanceof Room) {
             return $arg->getIdentifier();
-        } else if ($arg instanceof ChatRoomIdentifier) {
+        } else if ($arg instanceof RoomIdentifier) {
             return $arg;
         }
 
@@ -115,13 +113,13 @@ class ChatClient
     }
 
     /**
-     * @param PostedMessage|Message|int $messageOrId
-     * @param ChatRoom|null $room
+     * @param Message|int $messageOrId
+     * @param Room|null $room
      * @return array
      */
-    private function getMessageIDAndRoomPairFromArgs($messageOrId, ChatRoom $room = null): array
+    private function getMessageIDAndRoomPairFromArgs($messageOrId, Room $room = null): array
     {
-        if ($messageOrId instanceof Message || $messageOrId instanceof PostedMessage) {
+        if ($messageOrId instanceof Message) {
             return [$messageOrId->getId(), $messageOrId->getRoom()];
         }
 
@@ -181,12 +179,12 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @return Promise<string[][]>
      */
     public function getRoomAccess($room): Promise
     {
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_INFO_ACCESS);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
 
         return resolve(function() use($url) {
             /** @var HttpResponse $response */
@@ -196,7 +194,7 @@ class ChatClient
 
             $result = [];
 
-            foreach ([ChatRoomAccessType::READ_ONLY, ChatRoomAccessType::READ_WRITE, ChatRoomAccessType::OWNER] as $accessType) {
+            foreach ([RoomAccessType::READ_ONLY, RoomAccessType::READ_WRITE, RoomAccessType::OWNER] as $accessType) {
                 $sectionEl = $doc->getElementById('access-section-' . $accessType);
                 $result[$accessType] = $sectionEl !== null ? $this->parseRoomAccessSection($sectionEl) : [];
             }
@@ -206,19 +204,19 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @return Promise<string[]>
      */
     public function getRoomOwners($room): Promise
     {
         return resolve(function() use($room) {
             $users = yield $this->getRoomAccess($room);
-            return $users[ChatRoomAccessType::OWNER];
+            return $users[RoomAccessType::OWNER];
         });
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int $userId
      * @return Promise<bool>
      */
@@ -231,23 +229,23 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom $room
+     * @param Room $room
      * @return Promise<bool>
      */
-    public function isBotUserRoomOwner(ChatRoom $room): Promise
+    public function isBotUserRoomOwner(Room $room): Promise
     {
         return $this->isRoomOwner($room, $room->getSession()->getUser()->getId());
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int $messageId
-     * @return Promise<ChatRoom>
+     * @return Promise<Room>
      */
     public function getRoomIdentifierFromMessageID($room, int $messageId)
     {
         $identifier = $this->getIdentifierFromArg($room);
-        $url = $this->urlResolver->getEndpointURL($identifier, ChatRoomEndpoint::CHATROOM_GET_MESSAGE_HISTORY, $messageId);
+        $url = $this->urlResolver->getEndpointURL($identifier, Endpoint::CHATROOM_GET_MESSAGE_HISTORY, $messageId);
 
         return resolve(function() use($identifier, $url, $messageId) {
             /** @var HttpResponse $response */
@@ -272,14 +270,14 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int[] ...$ids
      * @return Promise
      */
     public function getChatUsers($room, int ...$ids): Promise
     {
         $identifier = $this->getIdentifierFromArg($room);
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHAT_USER_INFO);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHAT_USER_INFO);
 
         $body = (new FormBody)
             ->addField('roomId', $identifier->getId())
@@ -301,7 +299,7 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int[] ...$ids
      * @return Promise
      */
@@ -312,7 +310,7 @@ class ChatClient
         $promises = [];
 
         foreach ($ids as $id) {
-            $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::MAINSITE_USER, $id);
+            $url = $this->urlResolver->getEndpointURL($room, Endpoint::MAINSITE_USER, $id);
             $promises[$id] = $this->httpClient->request($url);
         }
 
@@ -331,12 +329,12 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @return Promise
      */
     public function getPingableUsers($room): Promise
     {
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_INFO_PINGABLE);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_PINGABLE);
 
         return resolve(function() use($url) {
             /** @var HttpResponse $response */
@@ -363,7 +361,7 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param string $name
      * @return Promise
      */
@@ -384,7 +382,7 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param string[] $names
      * @return Promise<int[]>
      */
@@ -410,12 +408,12 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @return Promise
      */
     public function getPinnedMessages($room): Promise
     {
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_STARS_LIST);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_STARS_LIST);
 
         return resolve(function() use($url) {
             /** @var HttpResponse $response */
@@ -441,13 +439,13 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int $id
      * @return Promise
      */
     public function getMessageHTML($room, int $id): Promise
     {
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_GET_MESSAGE_HTML, $id);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_GET_MESSAGE_HTML, $id);
 
         return resolve(function() use($url, $id) {
             /** @var HttpResponse $response */
@@ -464,31 +462,13 @@ class ChatClient
     }
 
     /**
-     * @param Command $command
-     * @return Promise
-     */
-    public function getCommandParametersAsMarkdown(Command $command): Promise
-    {
-        return resolve(function() use($command) {
-            $text = yield $this->getMessageText($command->getRoom(), $command->getId());
-            $commandLen = strlen($command->getCommandName());
-
-            if (substr($text, 2, $commandLen) !== $command->getCommandName()) {
-                throw new MessageFetchFailureException('Message markdown does not match passed command');
-            }
-
-            return trim(substr($text, $commandLen + 2));
-        });
-    }
-
-    /**
-     * @param ChatRoom|ChatRoomIdentifier $room
+     * @param Room|RoomIdentifier $room
      * @param int $id
      * @return Promise
      */
     public function getMessageText($room, int $id): Promise
     {
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_GET_MESSAGE_TEXT, $id);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_GET_MESSAGE_TEXT, $id);
 
         return resolve(function() use($url, $id) {
             /** @var HttpResponse $response */
@@ -505,7 +485,7 @@ class ChatClient
     }
 
     /**
-     * @param ChatRoom|ChatRoomContainer $target
+     * @param Room|RoomContainer $target
      * @param string $text
      * @param int $flags
      * @return Promise
@@ -513,23 +493,22 @@ class ChatClient
     public function postMessage($target, string $text, int $flags = PostFlags::NONE): Promise
     {
         return resolve(function() use ($target, $text, $flags) {
-            if ($target instanceof ChatRoom) {
+            if ($target instanceof Room) {
                 $room = $target;
-            } else if ($target instanceof ChatRoomContainer) {
+            } else if ($target instanceof RoomContainer) {
                 $room = $target->getRoom();
             } else {
                 throw new InvalidMessageTargetException(
-                    'Message target must be an instance of ' . ChatRoom::class . ' or ' . ChatRoomContainer::class
+                    'Message target must be an instance of ' . Room::class . ' or ' . RoomContainer::class
                 );
             }
 
-            $originatingCommand = $target instanceof Command
+            $parentMessage = $target instanceof Message
                 ? $target
                 : null;
 
-            // the order of these two conditions is very important! MUST short circuit on $flags or new rooms will block on the welcome message!
-            if (!($flags & PostFlags::FORCE) && !(yield $this->roomStatusManager->isApproved($room->getIdentifier()))) {
-                throw new RoomNotApprovedException('Bot is not approved for message posting in this room');
+            if (!($flags & PostFlags::FORCE) && !(yield $this->postPermissionManager->isPostAllowed($room->getIdentifier()))) {
+                throw new PostNotPermittedException('Not approved for message posting in this room');
             }
 
             $text = $this->applyPostFlagsToText($text, $flags);
@@ -538,28 +517,28 @@ class ChatClient
                 ->addField("text", $text)
                 ->addField("fkey", (string)$room->getSession()->getFKey());
 
-            $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_POST_MESSAGE);
+            $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_POST_MESSAGE);
 
             $request = (new HttpRequest)
                 ->setUri($url)
                 ->setMethod("POST")
                 ->setBody($body);
 
-            $action = $this->actionFactory->createPostMessageAction($request, $room, $text, $originatingCommand);
+            $action = $this->actionFactory->createPostMessageAction($request, $room, $text, $parentMessage);
             $this->actionExecutor->enqueue($action);
 
             return $action->promise();
         });
     }
 
-    public function moveMessages(ChatRoom $room, int $targetRoomId, int ...$messageIds): Promise
+    public function moveMessages(Room $room, int $targetRoomId, int ...$messageIds): Promise
     {
         $body = (new FormBody)
             ->addField("fkey", $room->getSession()->getFKey())
             ->addField('ids', implode(',', $messageIds))
             ->addField('to', $targetRoomId);
 
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_MOVE_MESSAGE);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_MOVE_MESSAGE);
 
         $request = (new HttpRequest)
             ->setUri($url)
@@ -571,13 +550,13 @@ class ChatClient
     }
 
     /**
-     * @param IdentifiableMessage $origin
+     * @param Message $origin
      * @param string $text
      * @param int $flags
      * @return Promise
      * @internal param string $text
      */
-    public function postReply(IdentifiableMessage $origin, string $text, int $flags = PostFlags::NONE): Promise
+    public function postReply(Message $origin, string $text, int $flags = PostFlags::NONE): Promise
     {
         $flags |= PostFlags::ALLOW_REPLIES;
         $flags &= ~PostFlags::FIXED_FONT;
@@ -586,12 +565,12 @@ class ChatClient
     }
 
     /**
-     * @param PostedMessage|Message $message
+     * @param Message $message
      * @param string $text
      * @param int $flags
      * @return Promise
      */
-    public function editMessage($message, string $text, int $flags = PostFlags::NONE): Promise
+    public function editMessage(Message $message, string $text, int $flags = PostFlags::NONE): Promise
     {
         $text = $this->applyPostFlagsToText($text, $flags);
 
@@ -599,7 +578,7 @@ class ChatClient
             ->addField("text", $text)
             ->addField("fkey", (string)$message->getRoom()->getSession()->getFKey());
 
-        $url = $this->urlResolver->getEndpointURL($message->getRoom(), ChatRoomEndpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
+        $url = $this->urlResolver->getEndpointURL($message->getRoom(), Endpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
 
         $request = (new HttpRequest)
             ->setUri($url)
@@ -612,18 +591,18 @@ class ChatClient
     }
 
     /**
-     * @param PostedMessage|Message|int $messageOrId
-     * @param ChatRoom|null $room
+     * @param Message|int $messageOrId
+     * @param Room|null $room
      * @return Promise
      */
-    public function pinOrUnpinMessage($messageOrId, ChatRoom $room = null): Promise
+    public function pinOrUnpinMessage($messageOrId, Room $room = null): Promise
     {
         list($messageId, $room) = $this->getMessageIDAndRoomPairFromArgs($messageOrId, $room);
 
         $body = (new FormBody)
             ->addField("fkey", $room->getSession()->getFKey());
 
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_PIN_MESSAGE, $messageId);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_PIN_MESSAGE, $messageId);
 
         $request = (new HttpRequest)
             ->setUri($url)
@@ -636,18 +615,18 @@ class ChatClient
     }
 
     /**
-     * @param PostedMessage|Message|int $messageOrId
-     * @param ChatRoom|null $room
+     * @param Message|int $messageOrId
+     * @param Room|null $room
      * @return Promise
      */
-    public function unstarMessage($messageOrId, ChatRoom $room = null): Promise
+    public function unstarMessage($messageOrId, Room $room = null): Promise
     {
         list($messageId, $room) = $this->getMessageIDAndRoomPairFromArgs($messageOrId, $room);
 
         $body = (new FormBody)
             ->addField("fkey", $room->getSession()->getFKey());
 
-        $url = $this->urlResolver->getEndpointURL($room, ChatRoomEndpoint::CHATROOM_UNSTAR_MESSAGE, $messageId);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_UNSTAR_MESSAGE, $messageId);
 
         $request = (new HttpRequest)
             ->setUri($url)

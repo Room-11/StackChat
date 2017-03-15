@@ -2,11 +2,6 @@
 
 namespace Room11\StackExchangeChatClient\Client\Actions;
 
-use Room11\StackExchangeChatClient\Client\ActionExecutionFailureException;
-use Room11\StackExchangeChatClient\Log\Level;
-
-class MessageMoveFailureException extends ActionExecutionFailureException {}
-
 class MoveMessageAction extends Action
 {
     public function processResponse($response, int $attempt): int
@@ -17,7 +12,7 @@ class MoveMessageAction extends Action
         }
 
         $errStr = 'A JSON response that I don\'t understand was received';
-        $this->logger->log(Level::ERROR, $errStr, $response);
+        $this->logger->error($errStr, ['response' => $response]);
         $this->fail(new MessageMoveFailureException($errStr));
 
         return self::FAILURE;

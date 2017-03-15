@@ -2,6 +2,6 @@
 
 namespace Room11\StackExchangeChatClient\Event;
 
-use Room11\StackExchangeChatClient\Client\ChatRoomContainer;
+use Room11\StackExchangeChatClient\Client\RoomContainer;
 
-interface RoomSourcedEvent extends Event, ChatRoomContainer {}
+interface RoomSourcedEvent extends Event, RoomContainer {}
