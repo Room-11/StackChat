@@ -3,6 +3,7 @@
 namespace Room11\StackExchangeChatClient\Event;
 
 use Room11\StackExchangeChatClient\Client\ChatClient;
+use Room11\StackExchangeChatClient\Client\Client;
 use Room11\StackExchangeChatClient\Event\Factory as EventFactory;
 use Room11\StackExchangeChatClient\Room\ConnectedRoomCollection;
 use Room11\StackExchangeChatClient\Room\Identifier;
@@ -13,7 +14,7 @@ class Builder
     private $chatClient;
     private $connectedRooms;
 
-    public function __construct(EventFactory $eventFactory, ChatClient $chatClient, ConnectedRoomCollection $connectedRooms)
+    public function __construct(EventFactory $eventFactory, Client $chatClient, ConnectedRoomCollection $connectedRooms)
     {
         $this->eventFactory = $eventFactory;
         $this->chatClient = $chatClient;

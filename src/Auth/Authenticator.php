@@ -12,6 +12,7 @@ use Ds\Queue;
 use Room11\OpenId\Authenticator as OpenIdAuthenticator;
 use Room11\OpenId\Credentials;
 use Room11\StackExchangeChatClient\Client\ChatClient;
+use Room11\StackExchangeChatClient\Client\Client;
 use Room11\StackExchangeChatClient\Endpoint;
 use Room11\StackExchangeChatClient\EndpointURLResolver;
 use Room11\StackExchangeChatClient\Room\Identifier;
@@ -33,7 +34,7 @@ class Authenticator
 
     public function __construct(
         HttpClient $httpClient,
-        ChatClient $chatClient,
+        Client $chatClient,
         SessionFactory $sessionInfoFactory,
         OpenIdAuthenticator $authenticator,
         CredentialManager $credentialManager,

@@ -27,11 +27,8 @@ use function Room11\DOMUtils\domdocument_load_html;
 use function Room11\DOMUtils\xpath_get_element;
 use function Room11\DOMUtils\xpath_get_elements;
 
-class ChatClient
+class ChatClient implements Client
 {
-    const ENCODING = 'UTF-8';
-    const TRUNCATION_LIMIT = 500;
-
     private $httpClient;
     private $logger;
     private $actionExecutor;

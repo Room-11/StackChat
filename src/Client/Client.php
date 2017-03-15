@@ -1,0 +1,151 @@
+<?php declare(strict_types = 1);
+
+namespace Room11\StackExchangeChatClient\Client;
+
+use Amp\Promise;
+use Room11\StackExchangeChatClient\Message;
+use Room11\StackExchangeChatClient\Room\Identifier;
+use Room11\StackExchangeChatClient\Room\Room;
+
+interface Client
+{
+    const ENCODING = 'UTF-8';
+    const TRUNCATION_LIMIT = 500;
+
+    function stripPingsFromText(string $text): string;
+
+    function truncateText(string $text, $length = self::TRUNCATION_LIMIT): string;
+
+    /**
+     * @param Room|Identifier $room
+     * @return Promise<string[][]>
+     */
+    function getRoomAccess($room): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @return Promise<string[]>
+     */
+    function getRoomOwners($room): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param int $userId
+     * @return Promise<bool>
+     */
+    function isRoomOwner($room, int $userId): Promise;
+
+    /**
+     * @param Room $room
+     * @return Promise<bool>
+     */
+    function isBotUserRoomOwner(Room $room): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param int $messageId
+     * @return Promise<Room>
+     */
+    function getRoomIdentifierFromMessageID($room, int $messageId);
+
+    /**
+     * @param Room|Identifier $room
+     * @param int[] ...$ids
+     * @return Promise
+     */
+    function getChatUsers($room, int ...$ids): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param int[] ...$ids
+     * @return Promise
+     */
+    function getMainSiteUsers($room, int ...$ids): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @return Promise
+     */
+    function getPingableUsers($room): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param string $name
+     * @return Promise
+     */
+    function getPingableName($room, string $name): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param string[] $names
+     * @return Promise<int[]>
+     */
+    function getPingableUserIDs($room, string ...$names): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @return Promise
+     */
+    function getPinnedMessages($room): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param int $id
+     * @return Promise
+     */
+    function getMessageHTML($room, int $id): Promise;
+
+    /**
+     * @param Room|Identifier $room
+     * @param int $id
+     * @return Promise
+     */
+    function getMessageText($room, int $id): Promise;
+
+    /**
+     * @param Room|RoomContainer $target
+     * @param string $text
+     * @param int $flags
+     * @return Promise
+     */
+    function postMessage($target, string $text, int $flags = PostFlags::NONE): Promise;
+
+    /**
+     * @param Room $room
+     * @param int $targetRoomId
+     * @param int[] ...$messageIds
+     * @return Promise
+     */
+    function moveMessages(Room $room, int $targetRoomId, int ...$messageIds): Promise;
+
+    /**
+     * @param Message $origin
+     * @param string $text
+     * @param int $flags
+     * @return Promise
+     * @internal param string $text
+     */
+    function postReply(Message $origin, string $text, int $flags = PostFlags::NONE): Promise;
+
+    /**
+     * @param Message $message
+     * @param string $text
+     * @param int $flags
+     * @return Promise
+     */
+    function editMessage(Message $message, string $text, int $flags = PostFlags::NONE): Promise;
+
+    /**
+     * @param Message|int $messageOrId
+     * @param Room|null $room
+     * @return Promise
+     */
+    function pinOrUnpinMessage($messageOrId, Room $room = null): Promise;
+
+    /**
+     * @param Message|int $messageOrId
+     * @param Room|null $room
+     * @return Promise
+     */
+    function unstarMessage($messageOrId, Room $room = null): Promise;
+}
