@@ -1,6 +1,6 @@
 <?php
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
 class PostFlags
 {

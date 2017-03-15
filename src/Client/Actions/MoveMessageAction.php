@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client\Actions;
+namespace Room11\StackChat\Client\Actions;
 
 class MoveMessageAction extends Action
 {

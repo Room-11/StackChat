@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Test\Event;
+namespace Room11\StackChat\Test\Event;
 
 use PHPUnit\Framework\TestCase;
-use Room11\StackExchangeChatClient\Event\BaseEvent;
-use Room11\StackExchangeChatClient\Event\Event;
+use Room11\StackChat\Event\BaseEvent;
+use Room11\StackChat\Event\Event;
 
 class BaseEventTest extends TestCase
 {

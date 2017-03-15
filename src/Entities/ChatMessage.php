@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Entities;
+namespace Room11\StackChat\Entities;
 
-use Room11\StackExchangeChatClient\Event\DeleteMessage;
-use Room11\StackExchangeChatClient\Event\EditMessage;
-use Room11\StackExchangeChatClient\Event\MessageEvent;
-use Room11\StackExchangeChatClient\Event\NewMessage;
-use Room11\StackExchangeChatClient\Event\ReplyMessage;
-use Room11\StackExchangeChatClient\Message;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Event\DeleteMessage;
+use Room11\StackChat\Event\EditMessage;
+use Room11\StackChat\Event\MessageEvent;
+use Room11\StackChat\Event\NewMessage;
+use Room11\StackChat\Event\ReplyMessage;
+use Room11\StackChat\Message;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 class ChatMessage implements Message
 {

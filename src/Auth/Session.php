@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Auth;
+namespace Room11\StackChat\Auth;
 
-use Room11\StackExchangeChatClient\Entities\ChatUser;
+use Room11\StackChat\Entities\ChatUser;
 
 class Session
 {

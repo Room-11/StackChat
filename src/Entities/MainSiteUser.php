@@ -6,7 +6,7 @@
  * Time: 19:55
  */
 
-namespace Room11\StackExchangeChatClient\Entities;
+namespace Room11\StackChat\Entities;
 
 use function Room11\DOMUtils\xpath_html_class;
 

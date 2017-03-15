@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
 use Amp\Artax\HttpClient;
 use Amp\Artax\Response as HttpResponse;
@@ -9,7 +9,7 @@ use Amp\Promise;
 use Ds\Queue;
 use ExceptionalJSON\DecodeErrorException as JSONDecodeErrorException;
 use Psr\Log\LoggerInterface as Logger;
-use Room11\StackExchangeChatClient\Client\Actions\Action;
+use Room11\StackChat\Client\Actions\Action;
 use function Amp\resolve;
 
 class ActionExecutor

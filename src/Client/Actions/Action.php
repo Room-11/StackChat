@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client\Actions;
+namespace Room11\StackChat\Client\Actions;
 
 use Amp\Artax\Request as HttpRequest;
 use Amp\Deferred;
 use Amp\Promisor;
 use Psr\Log\LoggerInterface as Logger;
-use Room11\StackExchangeChatClient\Client\ActionExecutionFailureException;
-use Room11\StackExchangeChatClient\Client\RoomContainer;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Client\ActionExecutionFailureException;
+use Room11\StackChat\Client\RoomContainer;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 abstract class Action implements Promisor, RoomContainer
 {

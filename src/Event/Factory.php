@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 class Factory
 {

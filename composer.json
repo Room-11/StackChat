@@ -2,7 +2,7 @@
   "name": "room11/stack-exchange-chat-client",
   "description": "Chat client for Stack Exchange",
   "keywords": ["chat", "client"],
-  "homepage": "https://github.com/Room-11/StackExchangeChatClient",
+  "homepage": "https://github.com/Room-11/StackChat",
   "license": "MIT",
   "authors": [
     {
@@ -21,12 +21,12 @@
   "autoload": {
     "files": ["src/constants.php"],
     "psr-4": {
-      "Room11\\StackExchangeChatClient\\": "src/"
+      "Room11\\StackChat\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Room11\\Jeeves\\Tests\\": "tests/src/"
+      "Room11\\StackChat\\Tests\\": "tests/"
     }
   },
   "require": {

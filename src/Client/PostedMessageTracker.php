@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
 use Ds\Deque;
-use Room11\StackExchangeChatClient\Entities\PostedMessage;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackExchangeChatClient\Room\InvalidRoomIdentifierException;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
-use const Room11\StackExchangeChatClient\ROOM_IDENTIFIER_EXPR;
+use Room11\StackChat\Entities\PostedMessage;
+use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Room\InvalidRoomIdentifierException;
+use Room11\StackChat\Room\Room as ChatRoom;
+use const Room11\StackChat\ROOM_IDENTIFIER_EXPR;
 
 class PostedMessageTracker
 {

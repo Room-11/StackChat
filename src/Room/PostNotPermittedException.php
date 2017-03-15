@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Room;
+namespace Room11\StackChat\Room;
 
-use Room11\StackExchangeChatClient\Exception;
+use Room11\StackChat\Exception;
 
 class PostNotPermittedException extends Exception {}

@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Room;
+namespace Room11\StackChat\Room;
 
 use Amp\Promise;
 use Amp\Websocket\Handshake;
-use Room11\StackExchangeChatClient\Auth\Authenticator;
-use Room11\StackExchangeChatClient\Auth\Session;
-use Room11\StackExchangeChatClient\WebSocket\HandlerFactory as WebSocketHandlerFactory;
+use Room11\StackChat\Auth\Authenticator;
+use Room11\StackChat\Auth\Session;
+use Room11\StackChat\WebSocket\HandlerFactory as WebSocketHandlerFactory;
 use function Amp\resolve;
 use function Amp\websocket;
 

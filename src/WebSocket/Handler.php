@@ -1,17 +1,17 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\WebSocket;
+namespace Room11\StackChat\WebSocket;
 
 use Amp\Websocket;
 use Amp\Websocket\Endpoint as WebSocketEndpoint;
 use Amp\Websocket\Message as WebSocketMessage;
 use ExceptionalJSON\DecodeErrorException as JSONDecodeErrorException;
 use Psr\Log\LoggerInterface as Logger;
-use Room11\StackExchangeChatClient\Entities\ChatMessage;
-use Room11\StackExchangeChatClient\Event\Builder as EventBuilder;
-use Room11\StackExchangeChatClient\Event\Event;
-use Room11\StackExchangeChatClient\Event\MessageEvent;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Entities\ChatMessage;
+use Room11\StackChat\Event\Builder as EventBuilder;
+use Room11\StackChat\Event\Event;
+use Room11\StackChat\Event\MessageEvent;
+use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
 use function Amp\cancel;
 use function Amp\once;
 

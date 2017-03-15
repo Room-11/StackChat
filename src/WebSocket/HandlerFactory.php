@@ -1,10 +1,10 @@
 <?php  declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\WebSocket;
+namespace Room11\StackChat\WebSocket;
 
 use Psr\Log\LoggerInterface as Logger;
-use Room11\StackExchangeChatClient\Event\Builder as EventBuilder;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Event\Builder as EventBuilder;
+use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
 
 class HandlerFactory
 {

@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
 use Amp\Promise;
-use Room11\StackExchangeChatClient\Message;
-use Room11\StackExchangeChatClient\Room\Identifier;
-use Room11\StackExchangeChatClient\Room\Room;
+use Room11\StackChat\Message;
+use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 interface Client
 {

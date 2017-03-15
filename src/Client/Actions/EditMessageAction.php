@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client\Actions;
+namespace Room11\StackChat\Client\Actions;
 
-use Room11\StackExchangeChatClient\Client\MessageEditFailureException;
+use Room11\StackChat\Client\MessageEditFailureException;
 
 class EditMessageAction extends Action
 {

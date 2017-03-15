@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Room;
+namespace Room11\StackChat\Room;
 
-use Room11\StackExchangeChatClient\Auth\Session;
-use Room11\StackExchangeChatClient\WebSocket\Handler as WebSocketHandler;
+use Room11\StackChat\Auth\Session;
+use Room11\StackChat\WebSocket\Handler as WebSocketHandler;
 
 class Room
 {

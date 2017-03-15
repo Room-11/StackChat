@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Auth;
+namespace Room11\StackChat\Auth;
 
 use Amp\Artax\FormBody;
 use Amp\Artax\HttpClient;
@@ -11,10 +11,10 @@ use Amp\Promise;
 use Ds\Queue;
 use Room11\OpenId\Authenticator as OpenIdAuthenticator;
 use Room11\OpenId\Credentials;
-use Room11\StackExchangeChatClient\Client\Client;
-use Room11\StackExchangeChatClient\Endpoint;
-use Room11\StackExchangeChatClient\EndpointURLResolver;
-use Room11\StackExchangeChatClient\Room\Identifier;
+use Room11\StackChat\Client\Client;
+use Room11\StackChat\Endpoint;
+use Room11\StackChat\EndpointURLResolver;
+use Room11\StackChat\Room\Identifier;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;

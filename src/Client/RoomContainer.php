@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 interface RoomContainer
 {

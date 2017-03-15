@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client;
+namespace Room11\StackChat\Client;
 
 use Amp\Artax\FormBody;
 use Amp\Artax\HttpClient;
@@ -9,18 +9,18 @@ use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
 use Psr\Log\LoggerInterface as Logger;
 use Room11\DOMUtils\ElementNotFoundException;
-use Room11\StackExchangeChatClient\Client\Actions\ActionFactory;
-use Room11\StackExchangeChatClient\Endpoint;
-use Room11\StackExchangeChatClient\EndpointURLResolver;
-use Room11\StackExchangeChatClient\Entities\ChatUser;
-use Room11\StackExchangeChatClient\Entities\MainSiteUser;
-use Room11\StackExchangeChatClient\Message;
-use Room11\StackExchangeChatClient\Room\Identifier as RoomIdentifier;
-use Room11\StackExchangeChatClient\Room\IdentifierFactory as RoomIdentifierFactory;
-use Room11\StackExchangeChatClient\Room\PostNotPermittedException;
-use Room11\StackExchangeChatClient\Room\PostPermissionManager;
-use Room11\StackExchangeChatClient\Room\Room;
-use Room11\StackExchangeChatClient\Room\UserAccessType as RoomAccessType;
+use Room11\StackChat\Client\Actions\ActionFactory;
+use Room11\StackChat\Endpoint;
+use Room11\StackChat\EndpointURLResolver;
+use Room11\StackChat\Entities\ChatUser;
+use Room11\StackChat\Entities\MainSiteUser;
+use Room11\StackChat\Message;
+use Room11\StackChat\Room\Identifier as RoomIdentifier;
+use Room11\StackChat\Room\IdentifierFactory as RoomIdentifierFactory;
+use Room11\StackChat\Room\PostNotPermittedException;
+use Room11\StackChat\Room\PostPermissionManager;
+use Room11\StackChat\Room\Room;
+use Room11\StackChat\Room\UserAccessType as RoomAccessType;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;

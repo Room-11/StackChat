@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Client\Actions;
+namespace Room11\StackChat\Client\Actions;
 
 use Amp\Artax\Request as HttpRequest;
 use Psr\Log\LoggerInterface as Logger;
-use Room11\StackExchangeChatClient\Client\MessagePostFailureException;
-use Room11\StackExchangeChatClient\Client\PostedMessageTracker;
-use Room11\StackExchangeChatClient\Entities\PostedMessage;
-use Room11\StackExchangeChatClient\Message;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Client\MessagePostFailureException;
+use Room11\StackChat\Client\PostedMessageTracker;
+use Room11\StackChat\Entities\PostedMessage;
+use Room11\StackChat\Message;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 class PostMessageAction extends Action
 {

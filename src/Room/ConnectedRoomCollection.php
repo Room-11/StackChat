@@ -1,8 +1,8 @@
 <?php  declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Room;
+namespace Room11\StackChat\Room;
 
-use const Room11\StackExchangeChatClient\ROOM_IDENTIFIER_EXPR;
+use const Room11\StackChat\ROOM_IDENTIFIER_EXPR;
 
 class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Event\Traits;
+namespace Room11\StackChat\Event\Traits;
 
 trait UserSource
 {

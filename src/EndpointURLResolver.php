@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient;
+namespace Room11\StackChat;
 
-use Room11\StackExchangeChatClient\Room\ConnectedRoomCollection;
-use Room11\StackExchangeChatClient\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Room\ConnectedRoomCollection;
+use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 class EndpointURLResolver
 {

@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
-use Room11\StackExchangeChatClient\Client\Client;
-use Room11\StackExchangeChatClient\Event\Factory as EventFactory;
-use Room11\StackExchangeChatClient\Room\ConnectedRoomCollection;
-use Room11\StackExchangeChatClient\Room\Identifier;
+use Room11\StackChat\Client\Client;
+use Room11\StackChat\Event\Factory as EventFactory;
+use Room11\StackChat\Room\ConnectedRoomCollection;
+use Room11\StackChat\Room\Identifier;
 
 class Builder
 {

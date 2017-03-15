@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Room;
+namespace Room11\StackChat\Room;
 
 use Amp\Promise;
 

@@ -7,7 +7,7 @@
          bootstrap="vendor/autoload.php"
 >
     <testsuites>
-        <testsuite name="StackExchangeChatClient Test Suite">
+        <testsuite name="StackChat Test Suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>

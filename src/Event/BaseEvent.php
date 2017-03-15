@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
 abstract class BaseEvent implements Event, \JsonSerializable
 {

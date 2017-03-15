@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
 // https://github.com/awalGarg/sochatbot/blob/417484f5031d4d9e4adf29ca4b6423b4ebfaa472/sechatapi/eventmaps.json
 final class EventType

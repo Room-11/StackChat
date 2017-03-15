@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
-use Room11\StackExchangeChatClient\Event\Traits\RoomSource;
-use Room11\StackExchangeChatClient\Event\Traits\UserSource;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Event\Traits\RoomSource;
+use Room11\StackChat\Event\Traits\UserSource;
+use Room11\StackChat\Room\Room as ChatRoom;
 use function Room11\DOMUtils\domdocument_load_html;
 
 abstract class MessageEvent extends BaseEvent implements UserSourcedEvent, RoomSourcedEvent

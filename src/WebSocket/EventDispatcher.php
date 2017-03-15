@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Room11\StackExchangeChatClient\WebSocket;
+namespace Room11\StackChat\WebSocket;
 
 use Amp\Promise;
-use Room11\StackExchangeChatClient\Entities\ChatMessage;
-use Room11\StackExchangeChatClient\Event\Event;
-use Room11\StackExchangeChatClient\Room\Identifier;
+use Room11\StackChat\Entities\ChatMessage;
+use Room11\StackChat\Event\Event;
+use Room11\StackChat\Room\Identifier;
 
 interface EventDispatcher
 {

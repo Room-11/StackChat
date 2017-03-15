@@ -6,10 +6,10 @@
  * Time: 22:06
  */
 
-namespace Room11\StackExchangeChatClient\Event;
+namespace Room11\StackChat\Event;
 
-use Room11\StackExchangeChatClient\Event\Traits\UserSource;
-use Room11\StackExchangeChatClient\Room\Room as ChatRoom;
+use Room11\StackChat\Event\Traits\UserSource;
+use Room11\StackChat\Room\Room as ChatRoom;
 
 class Invitation extends BaseEvent implements UserSourcedEvent, GlobalEvent
 {
