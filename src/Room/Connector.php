@@ -3,26 +3,23 @@
 namespace Room11\StackExchangeChatClient\Room;
 
 use Amp\Promise;
+use Amp\Websocket\Handshake;
 use Room11\StackExchangeChatClient\Auth\Authenticator;
 use Room11\StackExchangeChatClient\Auth\Session;
 use Room11\StackExchangeChatClient\WebSocket\HandlerFactory as WebSocketHandlerFactory;
-use Room11\StackExchangeChatClient\WebSocket\HandshakeFactory as WebSocketHandshakeFactory;
 use function Amp\resolve;
 use function Amp\websocket;
 
 class Connector
 {
     private $authenticator;
-    private $handshakeFactory;
     private $handlerFactory;
 
     public function __construct(
         Authenticator $authenticator,
-        WebSocketHandshakeFactory $handshakeFactory,
         WebSocketHandlerFactory $handlerFactory
     ) {
         $this->authenticator = $authenticator;
-        $this->handshakeFactory = $handshakeFactory;
         $this->handlerFactory = $handlerFactory;
     }
 
@@ -32,7 +29,7 @@ class Connector
             /** @var Session $sessionInfo */
             $sessionInfo = yield $this->authenticator->getRoomSessionInfo($identifier);
 
-            $handshake = $this->handshakeFactory->build($sessionInfo->getWebSocketUrl())
+            $handshake = (new Handshake($sessionInfo->getWebSocketUrl()))
                 ->setHeader('Origin', 'https://' . $identifier->getHost());
             $handler = $this->handlerFactory->build($identifier);
 
