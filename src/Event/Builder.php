@@ -2,7 +2,6 @@
 
 namespace Room11\StackExchangeChatClient\Event;
 
-use Room11\StackExchangeChatClient\Client\ChatClient;
 use Room11\StackExchangeChatClient\Client\Client;
 use Room11\StackExchangeChatClient\Event\Factory as EventFactory;
 use Room11\StackExchangeChatClient\Room\ConnectedRoomCollection;

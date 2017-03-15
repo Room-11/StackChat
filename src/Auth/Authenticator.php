@@ -11,7 +11,6 @@ use Amp\Promise;
 use Ds\Queue;
 use Room11\OpenId\Authenticator as OpenIdAuthenticator;
 use Room11\OpenId\Credentials;
-use Room11\StackExchangeChatClient\Client\ChatClient;
 use Room11\StackExchangeChatClient\Client\Client;
 use Room11\StackExchangeChatClient\Endpoint;
 use Room11\StackExchangeChatClient\EndpointURLResolver;
