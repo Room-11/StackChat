@@ -13,8 +13,8 @@ class PinOrUnpinMessageAction extends Action
             return self::SUCCESS;
         }
 
-        if($response === 'Only a room-owner can pin messages') {
-            $errStr = 'Jeeves cannot pin this message because it is not an owner of this room.';
+        if ($response === 'Only a room-owner can pin messages') {
+            $errStr = 'Authenticated user is not a room owner.';
             $this->logger->error($errStr, ['response' => $response]);
             $this->fail(new MessageEditFailureException($errStr));
         }
