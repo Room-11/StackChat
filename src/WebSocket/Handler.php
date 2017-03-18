@@ -80,7 +80,7 @@ class Handler implements Websocket
             // probably us)
             $this->setTimeoutWatcher(2);
         } catch (\Throwable $e) {
-            $this->logger->debug(
+            $this->logger->error(
                 "Something went generally wrong while opening connection to {$this->roomIdentifier}: $e"
             );
         }
@@ -91,7 +91,7 @@ class Handler implements Websocket
         try {
             $rawWebsocketMessage = yield $websocketMessage;
 
-            $this->logger->debug("Websocket message received on connection to {$this->roomIdentifier}", $rawWebsocketMessage);
+            $this->logger->debug("Websocket message received on connection to {$this->roomIdentifier}", ['message' => $rawWebsocketMessage]);
 
             $this->clearTimeoutWatcher();
             $this->setTimeoutWatcher();
@@ -115,7 +115,7 @@ class Handler implements Websocket
                 }
             }
         } catch (\Throwable $e) {
-            $this->logger->debug(
+            $this->logger->error(
                 "Something went generally wrong while processing events for {$this->roomIdentifier}: $e"
             );
         }
@@ -129,7 +129,7 @@ class Handler implements Websocket
             $this->logger->debug("Connection to {$this->roomIdentifier} closed");
             yield $this->eventDispatcher->processDisconnect($this->roomIdentifier);
         } catch (\Throwable $e) {
-            $this->logger->debug(
+            $this->logger->error(
                 "Something went generally wrong while handling closure of connection to {$this->roomIdentifier}: $e"
             );
         }

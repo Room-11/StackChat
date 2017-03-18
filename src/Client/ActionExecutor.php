@@ -78,7 +78,7 @@ class ActionExecutor
             } catch (JSONDecodeErrorException $e) {
                 $errStr = 'A response that could not be decoded as JSON was received'
                     . ' (JSON decode error: ' . $e->getMessage() . ')';
-                $this->logger->debug($errStr, $response->getBody());
+                $this->logger->debug($errStr, ['body' => $response->getBody()]);
                 $action->fail(new $exceptionClass($errStr, $e->getCode(), $e));
                 return;
             }
@@ -97,7 +97,7 @@ class ActionExecutor
             yield new Pause($result);
         }
 
-        $this->logger->debug('Executing an action failed after ' . $action->getMaxAttempts() . ' attempts and I know when to quit');
+        $this->logger->error('Executing an action failed after ' . $action->getMaxAttempts() . ' attempts and I know when to quit');
     }
 
     private function getBackOffDelay(string $body): int
