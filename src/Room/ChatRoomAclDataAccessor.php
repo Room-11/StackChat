@@ -9,7 +9,7 @@ use Room11\DOMUtils\ElementNotFoundException;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
 
-class ChatRoomAclDataAccessor
+class ChatRoomAclDataAccessor implements AclDataAccessor
 {
     private static $usercardQuery;
     private static $usernameQuery;
@@ -103,7 +103,7 @@ class ChatRoomAclDataAccessor
      * @param Room|Identifier $room
      * @return Promise<bool>
      */
-    public function isBotUserRoomOwner(Room $room): Promise
+    public function isAuthenticatedUserRoomOwner(Room $room): Promise
     {
         return $this->isRoomOwner($room, $room->getSession()->getUser()->getId());
     }
