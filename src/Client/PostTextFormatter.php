@@ -5,6 +5,8 @@ namespace Room11\StackChat\Client;
 class PostTextFormatter implements TextFormatter
 {
     private const ENCODING = 'UTF-8';
+    private const PING_MATCH_EXPR = '#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u';
+    private const PING_REPLACEMENT = '@' . Utf8Chars::ZWNJ . '$1';
 
     /**
      * {@inheritdoc}
@@ -29,7 +31,7 @@ class PostTextFormatter implements TextFormatter
      */
     public function stripPingsFromText(string $text): string
     {
-        return preg_replace('#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u', "@\u{2060}$1", $text);
+        return preg_replace(self::PING_MATCH_EXPR, self::PING_REPLACEMENT, $text);
     }
 
     /**
@@ -53,6 +55,6 @@ class PostTextFormatter implements TextFormatter
             $pos = $length - 1;
         }
 
-        return mb_substr($text, 0, $pos, self::ENCODING) . Chars::ELLIPSIS;
+        return mb_substr($text, 0, $pos, self::ENCODING) . Utf8Chars::ELLIPSIS;
     }
 }
