@@ -9,13 +9,6 @@ use Room11\StackChat\Room\Room;
 
 interface Client
 {
-    const ENCODING = 'UTF-8';
-    const TRUNCATION_LIMIT = 500;
-
-    function stripPingsFromText(string $text): string;
-
-    function truncateText(string $text, $length = self::TRUNCATION_LIMIT): string;
-
     /**
      * @param Room|Identifier $room
      * @param int $messageId

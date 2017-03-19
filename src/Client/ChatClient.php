@@ -27,6 +27,7 @@ use function Room11\DOMUtils\xpath_get_elements;
 
 class ChatClient implements Client
 {
+    private $textFormatter;
     private $httpClient;
     private $logger;
     private $actionExecutor;
@@ -36,6 +37,7 @@ class ChatClient implements Client
     private $postPermissionManager;
 
     public function __construct(
+        TextFormatter $textFormatter,
         HttpClient $httpClient,
         Logger $logger,
         ActionExecutor $actionExecutor,
@@ -44,6 +46,7 @@ class ChatClient implements Client
         RoomIdentifierFactory $identifierFactory,
         PostPermissionManager $postPermissionManager
     ) {
+        $this->textFormatter = $textFormatter;
         $this->httpClient = $httpClient;
         $this->logger = $logger;
         $this->actionExecutor = $actionExecutor;
@@ -53,24 +56,9 @@ class ChatClient implements Client
         $this->postPermissionManager = $postPermissionManager;
     }
 
-    private function checkAndNormaliseEncoding(string $text): string
-    {
-        if (!mb_check_encoding($text, self::ENCODING)) {
-            throw new MessagePostFailureException('Message text encoding invalid');
-        }
-
-        $text = \Normalizer::normalize(rtrim($text), \Normalizer::FORM_C);
-
-        if ($text === false) {
-            throw new MessagePostFailureException('Failed to normalize message text');
-        }
-
-        return $text;
-    }
-
     private function applyPostFlagsToText(string $text, int $flags): string
     {
-        $text = rtrim($this->checkAndNormaliseEncoding($text));
+        $text = rtrim($this->textFormatter->checkAndNormalizeEncoding($text));
 
         if ($flags & PostFlags::SINGLE_LINE) {
             $text = preg_replace('#\s+#u', ' ', $text);
@@ -79,13 +67,13 @@ class ChatClient implements Client
             $text = preg_replace('#(^|\r?\n)#', '$1    ', $text);
         }
         if (!($flags & PostFlags::ALLOW_PINGS)) {
-            $text = $this->stripPingsFromText($text);
+            $text = $this->textFormatter->stripPingsFromText($text);
         }
         if (!($flags & PostFlags::ALLOW_REPLIES)) {
             $text = preg_replace('#^:([0-9]+)\s*#', '', $text);
         }
         if (($flags & ~PostFlags::SINGLE_LINE) & PostFlags::TRUNCATE) {
-            $text = $this->truncateText($text);
+            $text = $this->textFormatter->truncateText($text);
         }
 
         return $text;
@@ -122,32 +110,6 @@ class ChatClient implements Client
         }
 
         return [$messageOrId, $room];
-    }
-
-    public function stripPingsFromText(string $text): string
-    {
-        return preg_replace('#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u', "@\u{2060}$1", $text);
-    }
-
-    public function truncateText(string $text, $length = self::TRUNCATION_LIMIT): string
-    {
-        if (mb_strlen($text, self::ENCODING) <= $length) {
-            return $text;
-        }
-
-        $text = mb_substr($text, 0, $length, self::ENCODING);
-
-        for ($pos = $length - 1; $pos >= 0; $pos--) {
-            if (preg_match('#^\s$#u', mb_substr($text, $pos, 1, self::ENCODING))) {
-                break;
-            }
-        }
-
-        if ($pos === 0) {
-            $pos = $length - 1;
-        }
-
-        return mb_substr($text, 0, $pos, self::ENCODING) . Chars::ELLIPSIS;
     }
 
     /**
@@ -424,7 +386,11 @@ class ChatClient implements Client
                 throw new PostNotPermittedException('Not approved for message posting in this room');
             }
 
-            $text = $this->applyPostFlagsToText($text, $flags);
+            try {
+                $text = $this->applyPostFlagsToText($text, $flags);
+            } catch (TextFormatException $e) {
+                throw new MessagePostFailureException($e->getMessage(), $e->getCode(), $e);
+            }
 
             $body = (new FormBody)
                 ->addField("text", $text)
@@ -482,10 +448,15 @@ class ChatClient implements Client
      * @param string $text
      * @param int $flags
      * @return Promise
+     * @throws MessagePostFailureException
      */
     public function editMessage(Message $message, string $text, int $flags = PostFlags::NONE): Promise
     {
-        $text = $this->applyPostFlagsToText($text, $flags);
+        try {
+            $text = $this->applyPostFlagsToText($text, $flags);
+        } catch (TextFormatException $e) {
+            throw new MessagePostFailureException($e->getMessage(), $e->getCode(), $e);
+        }
 
         $body = (new FormBody)
             ->addField("text", $text)
