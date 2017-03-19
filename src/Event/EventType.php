@@ -23,13 +23,13 @@ final class EventType
     const USER_NOTIFICATION = 16;
     const INVITATION = 17;
     const MESSAGE_REPLY = 18;
-    const MessageMovedOut = 19;
-    const MessageMovedIn = 20;
-    const TimeBreak = 21;
-    const FeedTicker = 22;
-    const UserSuspended = 29;
-    const UserMerged = 30;
-    const UserNameOrAvatarChanged = 34;
+    const MESSAGE_MOVED_OUT = 19;
+    const MESSAGE_MOVED_IN = 20;
+    const TIME_BREAK = 21;
+    const FEED_TICKER = 22;
+    const USER_SUSPENDED = 29;
+    const USER_MERGED = 30;
+    const USER_NAME_OR_AVATAR_CHANGED = 34;
 
     private function __construct() {}
 }
