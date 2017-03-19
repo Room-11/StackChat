@@ -20,11 +20,9 @@ use Room11\StackChat\Room\IdentifierFactory as RoomIdentifierFactory;
 use Room11\StackChat\Room\PostNotPermittedException;
 use Room11\StackChat\Room\PostPermissionManager;
 use Room11\StackChat\Room\Room;
-use Room11\StackChat\Room\UserAccessType as RoomAccessType;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;
-use function Room11\DOMUtils\xpath_get_element;
 use function Room11\DOMUtils\xpath_get_elements;
 
 class ChatClient implements Client
@@ -68,11 +66,6 @@ class ChatClient implements Client
         }
 
         return $text;
-    }
-
-    public function stripPingsFromText(string $text): string
-    {
-        return preg_replace('#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u', "@\u{2060}$1", $text);
     }
 
     private function applyPostFlagsToText(string $text, int $flags): string
@@ -131,6 +124,11 @@ class ChatClient implements Client
         return [$messageOrId, $room];
     }
 
+    public function stripPingsFromText(string $text): string
+    {
+        return preg_replace('#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u', "@\u{2060}$1", $text);
+    }
+
     public function truncateText(string $text, $length = self::TRUNCATION_LIMIT): string
     {
         if (mb_strlen($text, self::ENCODING) <= $length) {
@@ -150,88 +148,6 @@ class ChatClient implements Client
         }
 
         return mb_substr($text, 0, $pos, self::ENCODING) . Chars::ELLIPSIS;
-    }
-
-    private function parseRoomAccessSection(\DOMElement $section): array
-    {
-        try {
-            $userEls = xpath_get_elements($section, ".//div[contains(concat(' ', normalize-space(@class), ' '), ' usercard ')]");
-        } catch (ElementNotFoundException $e) {
-            return [];
-        }
-
-        $users = [];
-
-        foreach ($userEls as $userEl) {
-            $profileAnchor = xpath_get_element($userEl, ".//a[contains(concat(' ', normalize-space(@class), ' '), ' username ')]");
-
-            if (!preg_match('#^/users/([0-9]+)/#', $profileAnchor->getAttribute('href'), $match)) {
-                continue;
-            }
-
-            $users[(int)$match[1]] = trim($profileAnchor->textContent);
-        }
-
-        return $users;
-    }
-
-    /**
-     * @param Room|RoomIdentifier $room
-     * @return Promise<string[][]>
-     */
-    public function getRoomAccess($room): Promise
-    {
-        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
-
-        return resolve(function() use($url) {
-            /** @var HttpResponse $response */
-            $response = yield $this->httpClient->request($url);
-
-            $doc = domdocument_load_html($response->getBody());
-
-            $result = [];
-
-            foreach ([RoomAccessType::READ_ONLY, RoomAccessType::READ_WRITE, RoomAccessType::OWNER] as $accessType) {
-                $sectionEl = $doc->getElementById('access-section-' . $accessType);
-                $result[$accessType] = $sectionEl !== null ? $this->parseRoomAccessSection($sectionEl) : [];
-            }
-
-            return $result;
-        });
-    }
-
-    /**
-     * @param Room|RoomIdentifier $room
-     * @return Promise<string[]>
-     */
-    public function getRoomOwners($room): Promise
-    {
-        return resolve(function() use($room) {
-            $users = yield $this->getRoomAccess($room);
-            return $users[RoomAccessType::OWNER];
-        });
-    }
-
-    /**
-     * @param Room|RoomIdentifier $room
-     * @param int $userId
-     * @return Promise<bool>
-     */
-    public function isRoomOwner($room, int $userId): Promise
-    {
-        return resolve(function() use($room, $userId) {
-            $users = yield $this->getRoomOwners($room);
-            return isset($users[$userId]);
-        });
-    }
-
-    /**
-     * @param Room $room
-     * @return Promise<bool>
-     */
-    public function isBotUserRoomOwner(Room $room): Promise
-    {
-        return $this->isRoomOwner($room, $room->getSession()->getUser()->getId());
     }
 
     /**

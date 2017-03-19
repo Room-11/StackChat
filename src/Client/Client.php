@@ -18,31 +18,6 @@ interface Client
 
     /**
      * @param Room|Identifier $room
-     * @return Promise<string[][]>
-     */
-    function getRoomAccess($room): Promise;
-
-    /**
-     * @param Room|Identifier $room
-     * @return Promise<string[]>
-     */
-    function getRoomOwners($room): Promise;
-
-    /**
-     * @param Room|Identifier $room
-     * @param int $userId
-     * @return Promise<bool>
-     */
-    function isRoomOwner($room, int $userId): Promise;
-
-    /**
-     * @param Room $room
-     * @return Promise<bool>
-     */
-    function isBotUserRoomOwner(Room $room): Promise;
-
-    /**
-     * @param Room|Identifier $room
      * @param int $messageId
      * @return Promise<Room>
      */
