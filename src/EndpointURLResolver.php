@@ -2,6 +2,7 @@
 
 namespace Room11\StackChat;
 
+use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Room\ConnectedRoomCollection;
 use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
 use Room11\StackChat\Room\Room as ChatRoom;
@@ -40,6 +41,7 @@ class EndpointURLResolver
     ];
 
     private $connectedRooms;
+    private $sessions;
 
     private function getIdentifierFromArg($arg): ChatRoomIdentifier
     {
@@ -77,14 +79,15 @@ class EndpointURLResolver
     {
         return sprintf(
             self::$endpointURLTemplates[$endpoint],
-            rtrim($room->getSession()->getMainSiteUrl(), '/'),
+            rtrim($this->sessions->getSessionForRoom($room->getIdentifier())->getMainSiteUrl(), '/'),
             ...$extraData
         );
     }
 
-    public function __construct(ConnectedRoomCollection $connectedRooms)
+    public function __construct(ConnectedRoomCollection $connectedRooms, ActiveSessionTracker $sessions)
     {
         $this->connectedRooms = $connectedRooms;
+        $this->sessions = $sessions;
     }
 
     /**

@@ -9,6 +9,7 @@ use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
 use Psr\Log\LoggerInterface as Logger;
 use Room11\DOMUtils\ElementNotFoundException;
+use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Client\Actions\Factory as ActionFactory;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
@@ -35,6 +36,7 @@ class ChatClient implements Client
     private $urlResolver;
     private $identifierFactory;
     private $postPermissionManager;
+    private $sessions;
 
     public function __construct(
         TextFormatter $textFormatter,
@@ -44,7 +46,8 @@ class ChatClient implements Client
         ActionFactory $actionFactory,
         EndpointURLResolver $urlResolver,
         RoomIdentifierFactory $identifierFactory,
-        PostPermissionManager $postPermissionManager
+        PostPermissionManager $postPermissionManager,
+        ActiveSessionTracker $sessions
     ) {
         $this->textFormatter = $textFormatter;
         $this->httpClient = $httpClient;
@@ -54,6 +57,7 @@ class ChatClient implements Client
         $this->urlResolver = $urlResolver;
         $this->identifierFactory = $identifierFactory;
         $this->postPermissionManager = $postPermissionManager;
+        $this->sessions = $sessions;
     }
 
     private function applyPostFlagsToText(string $text, int $flags): string
@@ -394,7 +398,7 @@ class ChatClient implements Client
 
             $body = (new FormBody)
                 ->addField("text", $text)
-                ->addField("fkey", (string)$room->getSession()->getFKey());
+                ->addField("fkey", (string)$this->sessions->getSessionForRoom($room->getIdentifier())->getFKey());
 
             $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_POST_MESSAGE);
 
@@ -413,7 +417,7 @@ class ChatClient implements Client
     public function moveMessages(Room $room, int $targetRoomId, int ...$messageIds): Promise
     {
         $body = (new FormBody)
-            ->addField("fkey", $room->getSession()->getFKey())
+            ->addField("fkey", $this->sessions->getSessionForRoom($room->getIdentifier())->getFKey())
             ->addField('ids', implode(',', $messageIds))
             ->addField('to', $targetRoomId);
 
@@ -460,7 +464,7 @@ class ChatClient implements Client
 
         $body = (new FormBody)
             ->addField("text", $text)
-            ->addField("fkey", (string)$message->getRoom()->getSession()->getFKey());
+            ->addField("fkey", (string)$this->sessions->getSessionForRoom($message->getRoom()->getIdentifier())->getFKey());
 
         $url = $this->urlResolver->getEndpointURL($message->getRoom(), Endpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
 

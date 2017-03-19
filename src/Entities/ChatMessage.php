@@ -91,18 +91,6 @@ class ChatMessage implements Message
         return $this->event->getParentId();
     }
 
-    public function isConversation()
-    {
-        if ($this->event instanceof ReplyMessage) {
-            return true;
-        }
-
-        $userName = preg_quote($this->event->getRoom()->getSession()->getUser()->getName(), '#');
-        $expr = '#@' . $userName . '(?:[\s,.\'?!;:<>\#@~{}"%^&*-]|$)#iu';
-
-        return (bool)preg_match($expr, $this->getText());
-    }
-
     public function isReply(): bool
     {
         return $this->event instanceof ReplyMessage;

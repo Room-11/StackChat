@@ -6,6 +6,7 @@ use Amp\Artax\HttpClient;
 use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
 use Room11\DOMUtils\ElementNotFoundException;
+use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
 
@@ -16,11 +17,13 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
 
     private $httpClient;
     private $urlResolver;
+    private $sessions;
 
-    public function __construct(HttpClient $httpClient, EndpointURLResolver $urlResolver)
+    public function __construct(HttpClient $httpClient, EndpointURLResolver $urlResolver, ActiveSessionTracker $sessions)
     {
         $this->httpClient = $httpClient;
         $this->urlResolver = $urlResolver;
+        $this->sessions = $sessions;
 
         self::$usercardQuery = './/div[' . \Room11\DOMUtils\xpath_html_class('usercard') . ']';
         self::$usernameQuery = './/a[' . \Room11\DOMUtils\xpath_html_class('username') . ']';
@@ -105,6 +108,6 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
      */
     public function isAuthenticatedUserRoomOwner(Room $room): Promise
     {
-        return $this->isRoomOwner($room, $room->getSession()->getUser()->getId());
+        return $this->isRoomOwner($room, $this->sessions->getSessionForRoom($room->getIdentifier())->getUser()->getId());
     }
 }

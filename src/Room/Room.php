@@ -2,24 +2,20 @@
 
 namespace Room11\StackChat\Room;
 
-use Room11\StackChat\Auth\Session;
 use Room11\StackChat\WebSocket\Handler as WebSocketHandler;
 
 class Room
 {
     private $identifier;
-    private $session;
     private $permanent;
     private $websocketHandler;
 
     public function __construct(
         Identifier $identifier,
-        Session $sessionInfo,
         WebSocketHandler $websocketHandler,
         bool $permanent
     ) {
         $this->identifier = $identifier;
-        $this->session = $sessionInfo;
         $this->websocketHandler = $websocketHandler;
         $this->permanent = $permanent;
     }
@@ -27,11 +23,6 @@ class Room
     public function getIdentifier(): Identifier
     {
         return $this->identifier;
-    }
-
-    public function getSession(): Session
-    {
-        return $this->session;
     }
 
     public function isPermanent(): bool
@@ -48,7 +39,7 @@ class Room
     {
         return [
             'identifier' => $this->identifier,
-            'sessionInfo' => $this->session,
+            'isPermanent' => $this->permanent,
             'websocketEndpoint' => $this->websocketHandler->getEndpoint()->getInfo(),
         ];
     }
