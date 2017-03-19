@@ -9,7 +9,7 @@ use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
 use Psr\Log\LoggerInterface as Logger;
 use Room11\DOMUtils\ElementNotFoundException;
-use Room11\StackChat\Client\Actions\ActionFactory;
+use Room11\StackChat\Client\Actions\Factory as ActionFactory;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
 use Room11\StackChat\Entities\ChatUser;

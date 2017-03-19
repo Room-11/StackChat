@@ -10,7 +10,7 @@ use Room11\StackChat\Entities\PostedMessage;
 use Room11\StackChat\Message;
 use Room11\StackChat\Room\Room as ChatRoom;
 
-class PostMessageAction extends Action
+class PostMessage extends Action
 {
     private $tracker;
     private $text;

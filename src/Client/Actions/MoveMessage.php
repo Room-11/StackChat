@@ -2,25 +2,18 @@
 
 namespace Room11\StackChat\Client\Actions;
 
-use Room11\StackChat\Client\MessageEditFailureException;
-
-class EditMessageAction extends Action
+class MoveMessage extends Action
 {
-    public function getExceptionClassName(): string
-    {
-        return MessageEditFailureException::class;
-    }
-
     public function processResponse($response, int $attempt): int
     {
-        if ($response === 'ok') {
+        if (is_int($response)) {
             $this->succeed();
             return self::SUCCESS;
         }
 
         $errStr = 'A JSON response that I don\'t understand was received';
         $this->logger->error($errStr, ['response' => $response]);
-        $this->fail(new MessageEditFailureException($errStr));
+        $this->fail(new MessageMoveFailureException($errStr));
 
         return self::FAILURE;
     }
