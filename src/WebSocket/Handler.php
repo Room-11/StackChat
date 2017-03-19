@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface as Logger;
 use Room11\StackChat\Entities\ChatMessage;
 use Room11\StackChat\Event\Builder as EventBuilder;
 use Room11\StackChat\Event\Event;
+use Room11\StackChat\Event\GlobalEvent;
 use Room11\StackChat\Event\MessageEvent;
 use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
 use function Amp\cancel;
@@ -110,7 +111,7 @@ class Handler implements Websocket
             foreach ($events as $event) {
                 yield $this->eventDispatcher->processWebSocketEvent($event);
 
-                if ($event instanceof MessageEvent) {
+                if ($event instanceof MessageEvent && !$event instanceof GlobalEvent) {
                     $this->eventDispatcher->processMessageEvent(new ChatMessage($event));
                 }
             }
