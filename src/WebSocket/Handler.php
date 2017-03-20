@@ -22,6 +22,7 @@ class Handler implements Websocket
 
     private $eventBuilder;
     private $eventDispatcher;
+    private $endpoints;
     private $logger;
     private $roomIdentifier;
 
@@ -35,11 +36,13 @@ class Handler implements Websocket
     public function __construct(
         EventBuilder $eventBuilder,
         EventDispatcher $globalEventDispatcher,
+        EndpointCollection $endpoints,
         Logger $logger,
         ChatRoomIdentifier $roomIdentifier
     ) {
         $this->eventBuilder = $eventBuilder;
         $this->eventDispatcher = $globalEventDispatcher;
+        $this->endpoints = $endpoints;
         $this->logger = $logger;
         $this->roomIdentifier = $roomIdentifier;
     }
@@ -65,16 +68,12 @@ class Handler implements Websocket
         $this->logger->debug("Created timeout watcher #{$this->timeoutWatcherId}");
     }
 
-    public function getEndpoint(): WebsocketEndpoint
-    {
-        return $this->endpoint;
-    }
-
     public function onOpen(WebsocketEndpoint $endpoint, array $headers)
     {
         try {
             $this->logger->debug("Connection to {$this->roomIdentifier} established");
-            $this->endpoint = $endpoint;
+
+            $this->endpoints->set($this->roomIdentifier, $endpoint);
 
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
             // this seems to happen a lot while testing, I'm not sure if it's an issue with the server or us (it's

@@ -116,4 +116,12 @@ interface Client
      * @return Promise
      */
     function unstarMessage($messageOrId, Room $room = null): Promise;
+
+    /**
+     * Leave a chat room
+     *
+     * @param Room $room
+     * @return Promise
+     */
+    function leaveRoom(Room $room): Promise;
 }

@@ -21,6 +21,7 @@ use Room11\StackChat\Room\IdentifierFactory as RoomIdentifierFactory;
 use Room11\StackChat\Room\PostNotPermittedException;
 use Room11\StackChat\Room\PostPermissionManager;
 use Room11\StackChat\Room\Room;
+use Room11\StackChat\WebSocket\EndpointCollection as WebSocketEndpointCollection;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;
@@ -37,6 +38,7 @@ class ChatClient implements Client
     private $identifierFactory;
     private $postPermissionManager;
     private $sessions;
+    private $websocketEndpoints;
 
     public function __construct(
         TextFormatter $textFormatter,
@@ -47,7 +49,8 @@ class ChatClient implements Client
         EndpointURLResolver $urlResolver,
         RoomIdentifierFactory $identifierFactory,
         PostPermissionManager $postPermissionManager,
-        ActiveSessionTracker $sessions
+        ActiveSessionTracker $sessions,
+        WebSocketEndpointCollection $websocketEndpoints
     ) {
         $this->textFormatter = $textFormatter;
         $this->httpClient = $httpClient;
@@ -58,6 +61,7 @@ class ChatClient implements Client
         $this->identifierFactory = $identifierFactory;
         $this->postPermissionManager = $postPermissionManager;
         $this->sessions = $sessions;
+        $this->websocketEndpoints = $websocketEndpoints;
     }
 
     private function applyPostFlagsToText(string $text, int $flags): string
@@ -524,5 +528,26 @@ class ChatClient implements Client
         $action = $this->actionFactory->createUnstarMessageAction($request, $room);
 
         return $this->actionExecutor->enqueue($action);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function leaveRoom(Room $room): Promise
+    {
+        $body = (new FormBody)
+            ->addField('fkey', $this->sessions->getSessionForRoom($room->getIdentifier())->getFKey())
+            ->addField('quiet', 'true');
+
+        $request = (new HttpRequest)
+            ->setMethod('POST')
+            ->setUri($this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_LEAVE))
+            ->setBody($body);
+
+        if ($this->websocketEndpoints->contains($room->getIdentifier())) {
+            $this->websocketEndpoints->get($room->getIdentifier())->close();
+        }
+
+        return $this->httpClient->request($request);
     }
 }
