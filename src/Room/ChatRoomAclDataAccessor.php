@@ -53,10 +53,9 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     }
 
     /**
-     * @param Room|Identifier $room
-     * @return Promise<string[][]>
+     * {@inheritdoc}
      */
-    public function getRoomAccess($room): Promise
+    public function getRoomAccess(Room $room): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
 
@@ -78,10 +77,9 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     }
 
     /**
-     * @param Room|Identifier $room
-     * @return Promise<string[]>
+     * {@inheritdoc}
      */
-    public function getRoomOwners($room): Promise
+    public function getRoomOwners(Room $room): Promise
     {
         return \Amp\resolve(function() use($room) {
             $users = yield $this->getRoomAccess($room);
@@ -90,11 +88,9 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     }
 
     /**
-     * @param Room|Identifier $room
-     * @param int $userId
-     * @return Promise<bool>
+     * {@inheritdoc}
      */
-    public function isRoomOwner($room, int $userId): Promise
+    public function isRoomOwner(Room $room, int $userId): Promise
     {
         return \Amp\resolve(function() use($room, $userId) {
             $users = yield $this->getRoomOwners($room);
@@ -103,11 +99,10 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     }
 
     /**
-     * @param Room|Identifier $room
-     * @return Promise<bool>
+     * {@inheritdoc}
      */
     public function isAuthenticatedUserRoomOwner(Room $room): Promise
     {
-        return $this->isRoomOwner($room, $this->sessions->getSessionForRoom($room->getIdentifier())->getUser()->getId());
+        return $this->isRoomOwner($room, $this->sessions->getSessionForRoom($room)->getUser()->getId());
     }
 }

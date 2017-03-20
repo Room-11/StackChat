@@ -4,71 +4,71 @@ namespace Room11\StackChat\Client;
 
 use Amp\Promise;
 use Room11\StackChat\Message;
-use Room11\StackChat\Room\Identifier;
 use Room11\StackChat\Room\Room;
 
 interface Client
 {
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int $messageId
      * @return Promise<Room>
+     * @todo this method signature is obviously wrong...
      */
-    function getRoomIdentifierFromMessageID($room, int $messageId);
+    function getRoomIdentifierFromMessageID(Room $room, int $messageId);
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int[] ...$ids
      * @return Promise
      */
-    function getChatUsers($room, int ...$ids): Promise;
+    function getChatUsers(Room $room, int ...$ids): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int[] ...$ids
      * @return Promise
      */
-    function getMainSiteUsers($room, int ...$ids): Promise;
+    function getMainSiteUsers(Room $room, int ...$ids): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @return Promise
      */
-    function getPingableUsers($room): Promise;
+    function getPingableUsers(Room $room): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param string $name
      * @return Promise
      */
-    function getPingableName($room, string $name): Promise;
+    function getPingableName(Room $room, string $name): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param string[] $names
      * @return Promise<int[]>
      */
-    function getPingableUserIDs($room, string ...$names): Promise;
+    function getPingableUserIDs(Room $room, string ...$names): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @return Promise
      */
-    function getPinnedMessages($room): Promise;
+    function getPinnedMessages(Room $room): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int $id
      * @return Promise
      */
-    function getMessageHTML($room, int $id): Promise;
+    function getMessageHTML(Room $room, int $id): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int $id
      * @return Promise
      */
-    function getMessageText($room, int $id): Promise;
+    function getMessageText(Room $room, int $id): Promise;
 
     /**
      * @param Room|RoomContainer $target

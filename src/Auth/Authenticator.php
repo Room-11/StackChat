@@ -14,7 +14,7 @@ use Room11\OpenId\Credentials;
 use Room11\StackChat\Client\Client;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 use function Amp\all;
 use function Amp\resolve;
 use function Room11\DOMUtils\domdocument_load_html;
@@ -49,10 +49,10 @@ class Authenticator
         $this->queue = new Queue;
     }
 
-    public function getRoomSessionInfo(Identifier $identifier): Promise
+    public function getRoomSessionInfo(Room $room): Promise
     {
         $deferred = new Deferred;
-        $this->queue->push([$identifier, $deferred]);
+        $this->queue->push([$room, $deferred]);
 
         if (!$this->haveLoop) {
             /** @noinspection PhpVoidFunctionResultUsedInspection */
@@ -68,12 +68,12 @@ class Authenticator
         $this->haveLoop = true;
 
         while ($this->queue->count() > 0) {
-            /** @var Identifier $identifier */
+            /** @var Room $room */
             /** @var Deferred $deferred */
-            list($identifier, $deferred) = $this->queue->pop();
+            list($room, $deferred) = $this->queue->pop();
 
             try {
-                $deferred->succeed(yield from $this->getSessionInfoForIdentifier($identifier));
+                $deferred->succeed(yield from $this->getSessionInfoForRoom($room));
             } catch (\Throwable $e) {
                 $deferred->fail($e);
             }
@@ -82,10 +82,10 @@ class Authenticator
         $this->haveLoop = false;
     }
 
-    private function getSessionInfoForIdentifier(Identifier $identifier)
+    private function getSessionInfoForRoom(Room $room)
     {
         /** @var HttpResponse $response */
-        $url = $this->urlResolver->getEndpointURL($identifier, Endpoint::CHATROOM_UI);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_UI);
         $response = yield $this->httpClient->request($url);
 
         $doc = domdocument_load_html($response->getBody());
@@ -94,14 +94,14 @@ class Authenticator
         $mainSiteURL = $this->getMainSiteUrl($xpath);
 
         if (!$this->isLoggedInMainSite($doc)) {
-            $credentials = $this->credentialManager->getCredentialsForDomain($identifier->getHost());
+            $credentials = $this->credentialManager->getCredentialsForDomain($room->getHost());
             $xpath = yield from $this->logInMainSite($doc, $credentials);
         }
 
         $fkey = $this->getFKey($xpath);
-        $user = yield from $this->getUser($identifier, $xpath);
+        $user = yield from $this->getUser($room, $xpath);
 
-        $webSocketURL = yield from $this->getWebSocketUri($identifier, $fkey);
+        $webSocketURL = yield from $this->getWebSocketUri($room, $fkey);
 
         return $this->sessionInfoFactory->build($user, $fkey, $mainSiteURL, $webSocketURL);
     }
@@ -165,7 +165,7 @@ class Authenticator
         return $node->getAttribute('value');
     }
 
-    private function getUser(Identifier $identifier, \DOMXPath $xpath)
+    private function getUser(Room $room, \DOMXPath $xpath)
     {
         /** @var \DOMElement $node */
 
@@ -179,15 +179,15 @@ class Authenticator
             throw new \RuntimeException('Could not find user ID for chat room: no user ID class');
         }
 
-        $user = yield $this->chatClient->getChatUsers($identifier, (int)$match[1]);
+        $user = yield $this->chatClient->getChatUsers($room, (int)$match[1]);
 
         return $user[0];
     }
 
-    private function getWebSocketUri(Identifier $identifier, string $fKey)
+    private function getWebSocketUri(Room $room, string $fKey)
     {
         $authBody = (new FormBody)
-            ->addField("roomid", $identifier->getId())
+            ->addField("roomid", $room->getId())
             ->addField("fkey", $fKey);
 
         $historyBody = (new FormBody)
@@ -198,11 +198,11 @@ class Authenticator
 
         $requests = [
             'auth' => (new HttpRequest)
-                ->setUri($this->urlResolver->getEndpointURL($identifier, Endpoint::CHATROOM_WEBSOCKET_AUTH))
+                ->setUri($this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_WEBSOCKET_AUTH))
                 ->setMethod("POST")
                 ->setBody($authBody),
             'history' => (new HttpRequest)
-                ->setUri($this->urlResolver->getEndpointURL($identifier, Endpoint::CHATROOM_EVENT_HISTORY))
+                ->setUri($this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_EVENT_HISTORY))
                 ->setMethod("POST")
                 ->setBody($historyBody),
         ];

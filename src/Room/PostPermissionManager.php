@@ -6,5 +6,5 @@ use Amp\Promise;
 
 interface PostPermissionManager
 {
-    public function isPostAllowed(Identifier $identifier): Promise;
+    public function isPostAllowed(Room $identifier): Promise;
 }

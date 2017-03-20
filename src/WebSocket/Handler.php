@@ -13,7 +13,7 @@ use Room11\StackChat\Event\Event;
 use Room11\StackChat\Event\GlobalEvent;
 use Room11\StackChat\Event\MessageEvent;
 use Room11\StackChat\Room\ConnectedRoomCollection;
-use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Room\Room;
 use function Amp\cancel;
 use function Amp\once;
 
@@ -26,7 +26,7 @@ class Handler implements Websocket
     private $endpoints;
     private $rooms;
     private $logger;
-    private $roomIdentifier;
+    private $room;
 
     /**
      * @var WebsocketEndpoint
@@ -41,14 +41,14 @@ class Handler implements Websocket
         EndpointCollection $endpoints,
         ConnectedRoomCollection $rooms,
         Logger $logger,
-        ChatRoomIdentifier $roomIdentifier
+        Room $room
     ) {
         $this->eventBuilder = $eventBuilder;
         $this->eventDispatcher = $eventDispatcher;
         $this->endpoints = $endpoints;
         $this->rooms = $rooms;
         $this->logger = $logger;
-        $this->roomIdentifier = $roomIdentifier;
+        $this->room = $room;
     }
 
     private function clearTimeoutWatcher()
@@ -64,7 +64,7 @@ class Handler implements Websocket
     private function setTimeoutWatcher(int $secs = self::HEARTBEAT_TIMEOUT_SECONDS)
     {
         $this->timeoutWatcherId = once(function() {
-            $this->logger->debug("Connection to {$this->roomIdentifier} timed out");
+            $this->logger->debug("Connection to {$this->room} timed out");
 
             $this->endpoint->close();
         }, $secs * 1000);
@@ -75,10 +75,10 @@ class Handler implements Websocket
     public function onOpen(WebsocketEndpoint $endpoint, array $headers)
     {
         try {
-            $this->logger->debug("Connection to {$this->roomIdentifier} established");
+            $this->logger->debug("Connection to {$this->room} established");
 
-            $this->endpoints->set($this->roomIdentifier, $endpoint);
-            $this->rooms->add($this->roomIdentifier);
+            $this->endpoints->set($this->room, $endpoint);
+            $this->rooms->add($this->room);
 
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
             // this seems to happen a lot while testing, I'm not sure if it's an issue with the server or us (it's
@@ -86,7 +86,7 @@ class Handler implements Websocket
             $this->setTimeoutWatcher(2);
         } catch (\Throwable $e) {
             $this->logger->error(
-                "Something went generally wrong while opening connection to {$this->roomIdentifier}: $e"
+                "Something went generally wrong while opening connection to {$this->room}: $e"
             );
         }
     }
@@ -96,7 +96,7 @@ class Handler implements Websocket
         try {
             $rawWebsocketMessage = yield $websocketMessage;
 
-            $this->logger->debug("Websocket message received on connection to {$this->roomIdentifier}", ['message' => $rawWebsocketMessage]);
+            $this->logger->debug("Websocket message received on connection to {$this->room}", ['message' => $rawWebsocketMessage]);
 
             $this->clearTimeoutWatcher();
             $this->setTimeoutWatcher();
@@ -109,8 +109,8 @@ class Handler implements Websocket
             }
 
             /** @var Event[] $events */
-            $events = yield from $this->eventBuilder->build($data, $this->roomIdentifier);
-            $this->logger->debug(count($events) . " events targeting {$this->roomIdentifier} to process");
+            $events = yield from $this->eventBuilder->build($data, $this->room);
+            $this->logger->debug(count($events) . " events targeting {$this->room} to process");
 
             foreach ($events as $event) {
                 yield $this->eventDispatcher->onWebSocketEvent($event);
@@ -121,7 +121,7 @@ class Handler implements Websocket
             }
         } catch (\Throwable $e) {
             $this->logger->error(
-                "Something went generally wrong while processing events for {$this->roomIdentifier}: $e"
+                "Something went generally wrong while processing events for {$this->room}: $e"
             );
         }
     }
@@ -131,13 +131,13 @@ class Handler implements Websocket
         try {
             $this->clearTimeoutWatcher();
 
-            $this->rooms->remove($this->roomIdentifier);
+            $this->rooms->remove($this->room);
 
-            $this->logger->debug("Connection to {$this->roomIdentifier} closed");
-            yield $this->eventDispatcher->onDisconnect($this->roomIdentifier);
+            $this->logger->debug("Connection to {$this->room} closed");
+            yield $this->eventDispatcher->onDisconnect($this->room);
         } catch (\Throwable $e) {
             $this->logger->error(
-                "Something went generally wrong while handling closure of connection to {$this->roomIdentifier}: $e"
+                "Something went generally wrong while handling closure of connection to {$this->room}: $e"
             );
         }
     }

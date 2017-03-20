@@ -2,37 +2,14 @@
 
 namespace Room11\StackChat\Room;
 
-use const Room11\StackChat\ROOM_IDENTIFIER_EXPR;
-
 class ConnectedRoomCollection implements ConnectedRoomTracker
 {
     /**
-     * @var Identifier[][]
+     * @var Room[][]
      */
     private $rooms = [];
 
     private $currentCount = 0;
-
-    private function normalizeIdentifier($identifier)
-    {
-        if (is_object($identifier)) {
-            if ($identifier instanceof Room) {
-                $identifier = $identifier->getIdentifier();
-            }
-
-            if ($identifier instanceof Identifier) {
-                return [$identifier->getHost(), $identifier->getId()];
-            }
-        } else if (is_string($identifier)) {
-            if (!preg_match('/^' . ROOM_IDENTIFIER_EXPR . '$/i', $identifier, $match)) {
-                throw new InvalidRoomIdentifierException('Invalid identifier string format');
-            }
-
-            return [$match[1], (int)$match[2]];
-        }
-
-        throw new InvalidRoomIdentifierException('Identifier must be a string or identifiable object');
-    }
 
     /**
      * Collection constructor.
@@ -43,55 +20,33 @@ class ConnectedRoomCollection implements ConnectedRoomTracker
         array_map([$this, 'add'], $rooms);
     }
 
-    public function add(Identifier $room)
+    public function add(Room $room)
     {
-        list($host, $id) = $this->normalizeIdentifier($room);
-
-        $this->rooms[$host][$id] = $room;
+        $this->rooms[$room->getHost()][$room->getId()] = $room;
         $this->currentCount++;
     }
 
     /**
-     * @param Room|Identifier|string $identifier
+     * @param Room $room
      * @throws InvalidRoomIdentifierException
      */
-    public function remove($identifier)
+    public function remove(Room $room)
     {
-        list($host, $id) = $this->normalizeIdentifier($identifier);
-
-        if (!isset($this->rooms[$host][$id])) {
-            throw new InvalidRoomIdentifierException("Unknown room identifier: {$host}#{$id}");
+        if (!isset($this->rooms[$room->getHost()][$room->getId()])) {
+            throw new InvalidRoomIdentifierException("Unknown room identifier: {$room->getHost()}#{$room->getId()}");
         }
 
-        unset($this->rooms[$host][$id]);
+        unset($this->rooms[$room->getHost()][$room->getId()]);
         $this->currentCount--;
     }
 
     /**
-     * @param Room|Identifier|string $identifier
-     * @return Identifier
-     * @throws InvalidRoomIdentifierException
-     */
-    public function get($identifier): Identifier
-    {
-        list($host, $id) = $this->normalizeIdentifier($identifier);
-
-        if (!isset($this->rooms[$host][$id])) {
-            throw new InvalidRoomIdentifierException("Unknown room identifier: {$host}#{$id}");
-        }
-
-        return $this->rooms[$host][$id];
-    }
-
-    /**
-     * @param Room|Identifier|string $identifier
+     * @param Room $room
      * @return bool
      */
-    public function contains($identifier): bool
+    public function contains(Room $room): bool
     {
-        list($host, $id) = $this->normalizeIdentifier($identifier);
-
-        return isset($this->rooms[$host][$id]);
+        return isset($this->rooms[$room->getHost()][$room->getId()]);
     }
 
     /* Below this point are all array-object implementations that are just wrappers over the methods above. They
@@ -130,7 +85,7 @@ class ConnectedRoomCollection implements ConnectedRoomTracker
     }
 
     /**
-     * @return Identifier|null
+     * @return string|null
      */
     public function key()
     {
@@ -138,7 +93,7 @@ class ConnectedRoomCollection implements ConnectedRoomTracker
             return null;
         }
 
-        return $room->getIdentifier();
+        return $room->getIdentString();
     }
 
     public function valid()

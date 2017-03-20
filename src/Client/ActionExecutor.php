@@ -133,7 +133,7 @@ class ActionExecutor
 
     public function enqueue(Action $action): Promise
     {
-        $key = $action->getRoom()->getIdentifier()->getIdentString();
+        $key = $action->getRoom()->getIdentString();
 
         if (!isset($this->actionQueues[$key])) {
             $this->actionQueues[$key] = new Queue;

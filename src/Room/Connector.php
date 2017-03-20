@@ -28,21 +28,19 @@ class Connector
         $this->handlerFactory = $handlerFactory;
     }
 
-    public function connect(Identifier $identifier, EventDispatcher $eventDispatcher, bool $permanent): Promise
+    public function connect(Room $room, EventDispatcher $eventDispatcher, bool $permanent): Promise
     {
-        return resolve(function() use($identifier, $eventDispatcher, $permanent) {
+        return resolve(function() use($room, $eventDispatcher, $permanent) {
             /** @var Session $session */
-            $session = yield $this->authenticator->getRoomSessionInfo($identifier);
-            $this->sessions->setSessionForRoom($identifier, $session);
+            $session = yield $this->authenticator->getRoomSessionInfo($room);
+            $this->sessions->setSessionForRoom($room, $session);
 
             $handshake = (new Handshake($session->getWebSocketUrl()))
-                ->setHeader('Origin', 'https://' . $identifier->getHost());
+                ->setHeader('Origin', 'https://' . $room->getHost());
 
-            $handler = $this->handlerFactory->build($identifier, $eventDispatcher);
+            $handler = $this->handlerFactory->build($room, $eventDispatcher);
 
             yield websocket($handler, $handshake);
-
-            return new Room($identifier, $permanent);
         });
     }
 }

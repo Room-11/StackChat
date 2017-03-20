@@ -21,7 +21,7 @@ class StarMessage extends BaseEvent implements RoomSourcedEvent
 
     public function __construct(array $data, ChatRoom $room)
     {
-        parent::__construct($data, $room->getIdentifier()->getHost());
+        parent::__construct($data, $room->getHost());
 
         $this->room          = $room;
 

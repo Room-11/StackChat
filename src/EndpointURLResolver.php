@@ -4,8 +4,7 @@ namespace Room11\StackChat;
 
 use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Room\ConnectedRoomCollection;
-use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackChat\Room\Room as ChatRoom;
+use Room11\StackChat\Room\Room;
 
 class EndpointURLResolver
 {
@@ -43,39 +42,17 @@ class EndpointURLResolver
     private $connectedRooms;
     private $sessions;
 
-    private function getIdentifierFromArg($arg): ChatRoomIdentifier
-    {
-        if ($arg instanceof ChatRoom) {
-            return $arg->getIdentifier();
-        } else if ($arg instanceof ChatRoomIdentifier) {
-            return $arg;
-        }
-
-        throw new \InvalidArgumentException('Invalid chat room identifier');
-    }
-
-    private function getRoomFromArg($arg): ChatRoomIdentifier
-    {
-        if ($arg instanceof ChatRoom) {
-            return $arg->getIdentifier();
-        } else if ($arg instanceof ChatRoomIdentifier || is_string($arg)) {
-            return $this->connectedRooms->get($arg);
-        }
-
-        throw new \InvalidArgumentException('Invalid chat room identifier');
-    }
-
-    private function getChatEndpointURL(ChatRoomIdentifier $identifier, int $endpoint, array $extraData): string
+    private function getChatEndpointURL(Room $room, int $endpoint, array $extraData): string
     {
         return sprintf(
             self::$endpointURLTemplates[$endpoint],
-            $identifier->getHost(),
-            $identifier->getId(),
+            $room->getHost(),
+            $room->getId(),
             ...$extraData
         );
     }
 
-    private function getMainSiteEndpointURL(ChatRoomIdentifier $room, int $endpoint, array $extraData): string
+    private function getMainSiteEndpointURL(Room $room, int $endpoint, array $extraData): string
     {
         return sprintf(
             self::$endpointURLTemplates[$endpoint],
@@ -91,21 +68,21 @@ class EndpointURLResolver
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier|string $room
+     * @param Room $room
      * @param int $endpoint
      * @param array $extraData
      * @return string
      */
-    public function getEndpointURL($room, int $endpoint, ...$extraData): string
+    public function getEndpointURL(Room $room, int $endpoint, ...$extraData): string
     {
         if (!isset(self::$endpointURLTemplates[$endpoint])) {
             throw new \LogicException('Invalid endpoint ID');
         }
 
         if ($endpoint < Endpoint::MAINSITE_URLS_START) {
-            return $this->getChatEndpointURL($this->getIdentifierFromArg($room), $endpoint, $extraData);
+            return $this->getChatEndpointURL($room, $endpoint, $extraData);
         }
 
-        return $this->getMainSiteEndpointURL($this->getRoomFromArg($room), $endpoint, $extraData);
+        return $this->getMainSiteEndpointURL($room, $endpoint, $extraData);
     }
 }

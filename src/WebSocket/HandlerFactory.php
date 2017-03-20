@@ -5,7 +5,7 @@ namespace Room11\StackChat\WebSocket;
 use Psr\Log\LoggerInterface as Logger;
 use Room11\StackChat\Event\Builder as EventBuilder;
 use Room11\StackChat\Room\ConnectedRoomCollection;
-use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
+use Room11\StackChat\Room\Room;
 
 class HandlerFactory
 {
@@ -26,11 +26,11 @@ class HandlerFactory
         $this->logger = $logger;
     }
 
-    public function build(ChatRoomIdentifier $identifier, EventDispatcher $eventDispatcher)
+    public function build(Room $room, EventDispatcher $eventDispatcher)
     {
         return new Handler(
             $this->eventBuilder, $eventDispatcher, $this->endpointCollection,
-            $this->rooms, $this->logger, $identifier
+            $this->rooms, $this->logger, $room
         );
     }
 }

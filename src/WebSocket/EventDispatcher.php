@@ -5,7 +5,7 @@ namespace Room11\StackChat\WebSocket;
 use Amp\Promise;
 use Room11\StackChat\Entities\ChatMessage;
 use Room11\StackChat\Event\Event;
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 interface EventDispatcher
 {
@@ -13,7 +13,7 @@ interface EventDispatcher
 
     function onMessageEvent(ChatMessage $message): Promise;
 
-    function onConnect(Identifier $identifier): Promise;
+    function onConnect(Room $room): Promise;
 
-    function onDisconnect(Identifier $identifier): Promise;
+    function onDisconnect(Room $room): Promise;
 }

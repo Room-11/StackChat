@@ -22,7 +22,7 @@ class Invitation extends BaseEvent implements UserSourcedEvent, GlobalEvent
 
     public function __construct(array $data, ChatRoom $room)
     {
-        parent::__construct($data, $room->getIdentifier()->getHost());
+        parent::__construct($data, $room->getHost());
 
         $this->userId = (int)$data['user_id'];
         $this->userName = (string)$data['user_name'];

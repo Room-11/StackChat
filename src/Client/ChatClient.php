@@ -16,8 +16,6 @@ use Room11\StackChat\EndpointURLResolver;
 use Room11\StackChat\Entities\ChatUser;
 use Room11\StackChat\Entities\MainSiteUser;
 use Room11\StackChat\Message;
-use Room11\StackChat\Room\Identifier as RoomIdentifier;
-use Room11\StackChat\Room\IdentifierFactory as RoomIdentifierFactory;
 use Room11\StackChat\Room\PostNotPermittedException;
 use Room11\StackChat\Room\PostPermissionManager;
 use Room11\StackChat\Room\Room;
@@ -35,7 +33,6 @@ class ChatClient implements Client
     private $actionExecutor;
     private $actionFactory;
     private $urlResolver;
-    private $identifierFactory;
     private $postPermissionManager;
     private $sessions;
     private $websocketEndpoints;
@@ -47,7 +44,6 @@ class ChatClient implements Client
         ActionExecutor $actionExecutor,
         ActionFactory $actionFactory,
         EndpointURLResolver $urlResolver,
-        RoomIdentifierFactory $identifierFactory,
         PostPermissionManager $postPermissionManager,
         ActiveSessionTracker $sessions,
         WebSocketEndpointCollection $websocketEndpoints
@@ -58,7 +54,6 @@ class ChatClient implements Client
         $this->actionExecutor = $actionExecutor;
         $this->actionFactory = $actionFactory;
         $this->urlResolver = $urlResolver;
-        $this->identifierFactory = $identifierFactory;
         $this->postPermissionManager = $postPermissionManager;
         $this->sessions = $sessions;
         $this->websocketEndpoints = $websocketEndpoints;
@@ -87,17 +82,6 @@ class ChatClient implements Client
         return $text;
     }
 
-    private function getIdentifierFromArg($arg): RoomIdentifier
-    {
-        if ($arg instanceof Room) {
-            return $arg->getIdentifier();
-        } else if ($arg instanceof RoomIdentifier) {
-            return $arg;
-        }
-
-        throw new \InvalidArgumentException('Invalid chat room identifier');
-    }
-
     /**
      * @param Message|int $messageOrId
      * @param Room|null $room
@@ -121,16 +105,15 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param int $messageId
      * @return Promise<Room>
      */
-    public function getRoomIdentifierFromMessageID($room, int $messageId)
+    public function getRoomIdentifierFromMessageID(Room $room, int $messageId)
     {
-        $identifier = $this->getIdentifierFromArg($room);
-        $url = $this->urlResolver->getEndpointURL($identifier, Endpoint::CHATROOM_GET_MESSAGE_HISTORY, $messageId);
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_GET_MESSAGE_HISTORY, $messageId);
 
-        return resolve(function() use($identifier, $url, $messageId) {
+        return resolve(function() use($room, $url, $messageId) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($url);
 
@@ -148,22 +131,21 @@ class ChatClient implements Client
                 throw new DataFetchFailureException('Message anchor element href in an unexpected format');
             }
 
-            return $this->identifierFactory->create((int)$match[1], $identifier->getHost());
+            return new Room((int)$match[1], $room->getHost());
         });
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param int[] ...$ids
      * @return Promise
      */
-    public function getChatUsers($room, int ...$ids): Promise
+    public function getChatUsers(Room $room, int ...$ids): Promise
     {
-        $identifier = $this->getIdentifierFromArg($room);
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHAT_USER_INFO);
 
         $body = (new FormBody)
-            ->addField('roomId', $identifier->getId())
+            ->addField('roomId', $room->getId())
             ->addField('ids', implode(',', $ids));
 
         $request = (new HttpRequest)
@@ -171,25 +153,23 @@ class ChatClient implements Client
             ->setUri($url)
             ->setBody($body);
 
-        return resolve(function() use($request, $identifier) {
+        return resolve(function() use($request) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($request);
 
-            return array_map(function($data) use($identifier) {
+            return array_map(function($data) {
                 return new ChatUser($data);
             }, json_try_decode($response->getBody(), true)['users'] ?? []);
         });
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param int[] ...$ids
      * @return Promise
      */
-    public function getMainSiteUsers($room, int ...$ids): Promise
+    public function getMainSiteUsers(Room $room, int ...$ids): Promise
     {
-        $identifier = $this->getIdentifierFromArg($room);
-
         $promises = [];
 
         foreach ($ids as $id) {
@@ -197,7 +177,7 @@ class ChatClient implements Client
             $promises[$id] = $this->httpClient->request($url);
         }
 
-        return resolve(function() use($promises, $identifier) {
+        return resolve(function() use($promises, $room) {
             /** @var HttpResponse[] $responses */
             $responses = yield all($promises);
 
@@ -212,10 +192,10 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @return Promise
      */
-    public function getPingableUsers($room): Promise
+    public function getPingableUsers(Room $room): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_PINGABLE);
 
@@ -244,11 +224,11 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param string $name
      * @return Promise
      */
-    public function getPingableName($room, string $name): Promise
+    public function getPingableName(Room $room, string $name): Promise
     {
         return resolve(function() use($room, $name) {
             $lower = strtolower($name);
@@ -265,11 +245,11 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param string[] $names
      * @return Promise<int[]>
      */
-    public function getPingableUserIDs($room, string ...$names): Promise
+    public function getPingableUserIDs(Room $room, string ...$names): Promise
     {
         return resolve(function() use($room, $names) {
             $users = yield $this->getPingableUsers($room);
@@ -291,10 +271,10 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @return Promise
      */
-    public function getPinnedMessages($room): Promise
+    public function getPinnedMessages(Room $room): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_STARS_LIST);
 
@@ -322,11 +302,11 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param int $id
      * @return Promise
      */
-    public function getMessageHTML($room, int $id): Promise
+    public function getMessageHTML(Room $room, int $id): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_GET_MESSAGE_HTML, $id);
 
@@ -345,11 +325,11 @@ class ChatClient implements Client
     }
 
     /**
-     * @param Room|RoomIdentifier $room
+     * @param Room $room
      * @param int $id
      * @return Promise
      */
-    public function getMessageText($room, int $id): Promise
+    public function getMessageText(Room $room, int $id): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_GET_MESSAGE_TEXT, $id);
 
@@ -390,7 +370,7 @@ class ChatClient implements Client
                 ? $target
                 : null;
 
-            if (!($flags & PostFlags::FORCE) && !(yield $this->postPermissionManager->isPostAllowed($room->getIdentifier()))) {
+            if (!($flags & PostFlags::FORCE) && !(yield $this->postPermissionManager->isPostAllowed($room))) {
                 throw new PostNotPermittedException('Not approved for message posting in this room');
             }
 
@@ -402,7 +382,7 @@ class ChatClient implements Client
 
             $body = (new FormBody)
                 ->addField("text", $text)
-                ->addField("fkey", (string)$this->sessions->getSessionForRoom($room->getIdentifier())->getFKey());
+                ->addField("fkey", (string)$this->sessions->getSessionForRoom($room)->getFKey());
 
             $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_POST_MESSAGE);
 
@@ -421,7 +401,7 @@ class ChatClient implements Client
     public function moveMessages(Room $room, int $targetRoomId, int ...$messageIds): Promise
     {
         $body = (new FormBody)
-            ->addField("fkey", $this->sessions->getSessionForRoom($room->getIdentifier())->getFKey())
+            ->addField("fkey", $this->sessions->getSessionForRoom($room)->getFKey())
             ->addField('ids', implode(',', $messageIds))
             ->addField('to', $targetRoomId);
 
@@ -466,18 +446,20 @@ class ChatClient implements Client
             throw new MessagePostFailureException($e->getMessage(), $e->getCode(), $e);
         }
 
+        $room = $message->getRoom();
+
         $body = (new FormBody)
             ->addField("text", $text)
-            ->addField("fkey", (string)$this->sessions->getSessionForRoom($message->getRoom()->getIdentifier())->getFKey());
+            ->addField("fkey", (string)$this->sessions->getSessionForRoom($room)->getFKey());
 
-        $url = $this->urlResolver->getEndpointURL($message->getRoom(), Endpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
 
         $request = (new HttpRequest)
             ->setUri($url)
             ->setMethod("POST")
             ->setBody($body);
 
-        $action = $this->actionFactory->createEditMessageAction($request, $message->getRoom());
+        $action = $this->actionFactory->createEditMessageAction($request, $room);
 
         return $this->actionExecutor->enqueue($action);
     }
@@ -536,7 +518,7 @@ class ChatClient implements Client
     public function leaveRoom(Room $room): Promise
     {
         $body = (new FormBody)
-            ->addField('fkey', $this->sessions->getSessionForRoom($room->getIdentifier())->getFKey())
+            ->addField('fkey', $this->sessions->getSessionForRoom($room)->getFKey())
             ->addField('quiet', 'true');
 
         $request = (new HttpRequest)
@@ -544,8 +526,8 @@ class ChatClient implements Client
             ->setUri($this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_LEAVE))
             ->setBody($body);
 
-        if ($this->websocketEndpoints->contains($room->getIdentifier())) {
-            $this->websocketEndpoints->get($room->getIdentifier())->close();
+        if ($this->websocketEndpoints->contains($room)) {
+            $this->websocketEndpoints->get($room)->close();
         }
 
         return $this->httpClient->request($request);

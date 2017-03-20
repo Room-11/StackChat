@@ -4,10 +4,7 @@ namespace Room11\StackChat\Client;
 
 use Ds\Deque;
 use Room11\StackChat\Entities\PostedMessage;
-use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
-use Room11\StackChat\Room\InvalidRoomIdentifierException;
-use Room11\StackChat\Room\Room as ChatRoom;
-use const Room11\StackChat\ROOM_IDENTIFIER_EXPR;
+use Room11\StackChat\Room\Room;
 
 class PostedMessageTracker
 {
@@ -18,30 +15,9 @@ class PostedMessageTracker
      */
     private $messages = [];
 
-    private function normalizeKey($key): string
-    {
-        if (is_object($key)) {
-            if ($key instanceof ChatRoom) {
-                $key = $key->getIdentifier();
-            }
-
-            if ($key instanceof ChatRoomIdentifier) {
-                return $key->getIdentString();
-            }
-        } else if (is_string($key)) {
-            if (!preg_match('/^' . ROOM_IDENTIFIER_EXPR . '$/i', $key)) {
-                throw new InvalidRoomIdentifierException('Invalid identifier string format');
-            }
-
-            return $key;
-        }
-
-        throw new InvalidRoomIdentifierException('Identifier must be a string or identifiable object');
-    }
-
     public function pushMessage(PostedMessage $message)
     {
-        $ident = $message->getRoom()->getIdentifier()->getIdentString();
+        $ident = $message->getRoom()->getIdentString();
 
         if (!isset($this->messages[$ident])) {
             $this->messages[$ident] = new Deque;
@@ -55,12 +31,12 @@ class PostedMessageTracker
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier|string $room
+     * @param Room $room
      * @return PostedMessage
      */
-    public function popMessage(ChatRoom $room)
+    public function popMessage(Room $room)
     {
-        $ident = $this->normalizeKey($room);
+        $ident = $room->getIdentString();
 
         if (!isset($this->messages[$ident]) || !$this->messages[$ident] instanceof Deque) {
             return null;
@@ -76,12 +52,12 @@ class PostedMessageTracker
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier|string $room
+     * @param Room $room
      * @return PostedMessage
      */
-    public function peekMessage($room)
+    public function peekMessage(Room $room)
     {
-        $ident = $this->normalizeKey($room);
+        $ident = $room->getIdentString();
 
         return isset($this->messages[$ident])
             ? $this->messages[$ident]->last()
@@ -89,12 +65,12 @@ class PostedMessageTracker
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier|string $room
+     * @param Room $room
      * @return PostedMessage[]
      */
-    public function getAll($room): array
+    public function getAll(Room $room): array
     {
-        $ident = $this->normalizeKey($room);
+        $ident = $room->getIdentString();
 
         return isset($this->messages[$ident])
             ? $this->messages[$ident]->toArray()
@@ -102,12 +78,12 @@ class PostedMessageTracker
     }
 
     /**
-     * @param ChatRoom|ChatRoomIdentifier|string $room
+     * @param Room $room
      * @return int
      */
-    public function getCount($room): int
+    public function getCount(Room $room): int
     {
-        $ident = $this->normalizeKey($room);
+        $ident = $room->getIdentString();
 
         return isset($this->messages[$ident])
             ? $this->messages[$ident]->count()

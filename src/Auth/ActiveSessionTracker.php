@@ -3,7 +3,7 @@
 namespace Room11\StackChat\Auth;
 
 use Room11\StackChat\KeyNotFoundException;
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 class ActiveSessionTracker implements SessionTracker
 {
@@ -12,12 +12,12 @@ class ActiveSessionTracker implements SessionTracker
      */
     private $sessions = [];
 
-    public function setSessionForRoom(Identifier $room, Session $session): void
+    public function setSessionForRoom(Room $room, Session $session): void
     {
         $this->sessions[$room->getIdentString()] = $session;
     }
 
-    public function getSessionForRoom(Identifier $room): Session
+    public function getSessionForRoom(Room $room): Session
     {
         if (!isset($this->sessions[$room->getIdentString()])) {
             throw new KeyNotFoundException("Key {$room->getIdentString()} not found in session tracker");
@@ -26,7 +26,7 @@ class ActiveSessionTracker implements SessionTracker
         return $this->sessions[$room->getIdentString()];
     }
 
-    public function hasSessionForRoom(Identifier $room): bool
+    public function hasSessionForRoom(Room $room): bool
     {
         return isset($this->sessions[$room->getIdentString()]);
     }

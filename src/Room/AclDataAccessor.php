@@ -7,26 +7,26 @@ use Amp\Promise;
 interface AclDataAccessor
 {
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @return Promise<string[][]>
      */
-    function getRoomAccess($room): Promise;
+    function getRoomAccess(Room $room): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @return Promise<string[]>
      */
-    function getRoomOwners($room): Promise;
+    function getRoomOwners(Room $room): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @param int $userId
      * @return Promise<bool>
      */
-    function isRoomOwner($room, int $userId): Promise;
+    function isRoomOwner(Room $room, int $userId): Promise;
 
     /**
-     * @param Room|Identifier $room
+     * @param Room $room
      * @return Promise<bool>
      */
     function isAuthenticatedUserRoomOwner(Room $room): Promise;

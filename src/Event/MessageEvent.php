@@ -19,7 +19,7 @@ abstract class MessageEvent extends BaseEvent implements UserSourcedEvent, RoomS
 
     public function __construct(array $data, ChatRoom $room)
     {
-        parent::__construct($data, $room->getIdentifier()->getHost());
+        parent::__construct($data, $room->getHost());
 
         $this->room = $room;
 

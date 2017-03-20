@@ -5,7 +5,7 @@ namespace Room11\StackChat\Event;
 use Room11\StackChat\Client\Client;
 use Room11\StackChat\Event\Factory as EventFactory;
 use Room11\StackChat\Room\ConnectedRoomCollection;
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 class Builder
 {
@@ -20,12 +20,11 @@ class Builder
         $this->connectedRooms = $connectedRooms;
     }
 
-    public function build(array $data, Identifier $identifier)
+    public function build(array $data, Room $room)
     {
         $result = [];
 
-        $room = $this->connectedRooms->get($identifier);
-        $roomId = $identifier->getId();
+        $roomId = $room->getId();
 
         foreach ($data['r' . $roomId]['e'] ?? [] as $eventData) {
             if (!isset($eventData['id'])) {

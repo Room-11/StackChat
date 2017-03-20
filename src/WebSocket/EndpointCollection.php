@@ -4,28 +4,28 @@ namespace Room11\StackChat\WebSocket;
 
 use Amp\Websocket\Endpoint;
 use Room11\StackChat\KeyNotFoundException;
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 class EndpointCollection
 {
     private $endpoints = [];
 
-    public function set(Identifier $identifier, Endpoint $endpoint): void
+    public function set(Room $room, Endpoint $endpoint): void
     {
-        $this->endpoints[$identifier->getIdentString()] = $endpoint;
+        $this->endpoints[$room->getIdentString()] = $endpoint;
     }
 
-    public function get(Identifier $identifier): Endpoint
+    public function get(Room $room): Endpoint
     {
-        if (!isset($this->endpoints[$identifier->getIdentString()])) {
-            throw new KeyNotFoundException("Key {$identifier->getIdentString()} not found in endpoint collection");
+        if (!isset($this->endpoints[$room->getIdentString()])) {
+            throw new KeyNotFoundException("Key {$room->getIdentString()} not found in endpoint collection");
         }
 
-        return $this->endpoints[$identifier->getIdentString()];
+        return $this->endpoints[$room->getIdentString()];
     }
 
-    public function contains(Identifier $identifier): bool
+    public function contains(Room $room): bool
     {
-        return isset($this->endpoints[$identifier->getIdentString()]);
+        return isset($this->endpoints[$room->getIdentString()]);
     }
 }

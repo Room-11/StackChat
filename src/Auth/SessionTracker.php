@@ -2,9 +2,9 @@
 
 namespace Room11\StackChat\Auth;
 
-use Room11\StackChat\Room\Identifier;
+use Room11\StackChat\Room\Room;
 
 interface SessionTracker
 {
-    function getSessionForRoom(Identifier $room): Session;
+    function getSessionForRoom(Room $room): Session;
 }
