@@ -40,7 +40,7 @@ class Connector
 
             yield websocket($handler, $handshake);
 
-            return new Room($identifier, $handler, $permanent);
+            return new Room($identifier, $permanent);
         });
     }
 }
