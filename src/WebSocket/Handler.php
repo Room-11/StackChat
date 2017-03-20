@@ -35,13 +35,13 @@ class Handler implements Websocket
 
     public function __construct(
         EventBuilder $eventBuilder,
-        EventDispatcher $globalEventDispatcher,
+        EventDispatcher $eventDispatcher,
         EndpointCollection $endpoints,
         Logger $logger,
         ChatRoomIdentifier $roomIdentifier
     ) {
         $this->eventBuilder = $eventBuilder;
-        $this->eventDispatcher = $globalEventDispatcher;
+        $this->eventDispatcher = $eventDispatcher;
         $this->endpoints = $endpoints;
         $this->logger = $logger;
         $this->roomIdentifier = $roomIdentifier;

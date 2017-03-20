@@ -7,6 +7,7 @@ use Amp\Websocket\Handshake;
 use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Auth\Authenticator;
 use Room11\StackChat\Auth\Session;
+use Room11\StackChat\WebSocket\EventDispatcherFactory;
 use Room11\StackChat\WebSocket\HandlerFactory as WebSocketHandlerFactory;
 use function Amp\resolve;
 use function Amp\websocket;
@@ -15,15 +16,18 @@ class Connector
 {
     private $authenticator;
     private $sessions;
+    private $eventDispatcherFactory;
     private $handlerFactory;
 
     public function __construct(
         Authenticator $authenticator,
         ActiveSessionTracker $sessions,
+        EventDispatcherFactory $eventDispatcherFactory,
         WebSocketHandlerFactory $handlerFactory
     ) {
         $this->authenticator = $authenticator;
         $this->sessions = $sessions;
+        $this->eventDispatcherFactory = $eventDispatcherFactory;
         $this->handlerFactory = $handlerFactory;
     }
 
@@ -36,7 +40,9 @@ class Connector
 
             $handshake = (new Handshake($session->getWebSocketUrl()))
                 ->setHeader('Origin', 'https://' . $identifier->getHost());
-            $handler = $this->handlerFactory->build($identifier);
+
+            $eventDispatcher = $this->eventDispatcherFactory->createEventDispatcher($identifier);
+            $handler = $this->handlerFactory->build($identifier, $eventDispatcher);
 
             yield websocket($handler, $handshake);
 
