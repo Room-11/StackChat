@@ -12,6 +12,7 @@ use Room11\StackChat\Event\Builder as EventBuilder;
 use Room11\StackChat\Event\Event;
 use Room11\StackChat\Event\GlobalEvent;
 use Room11\StackChat\Event\MessageEvent;
+use Room11\StackChat\Room\ConnectedRoomCollection;
 use Room11\StackChat\Room\Identifier as ChatRoomIdentifier;
 use function Amp\cancel;
 use function Amp\once;
@@ -23,6 +24,7 @@ class Handler implements Websocket
     private $eventBuilder;
     private $eventDispatcher;
     private $endpoints;
+    private $rooms;
     private $logger;
     private $roomIdentifier;
 
@@ -37,12 +39,14 @@ class Handler implements Websocket
         EventBuilder $eventBuilder,
         EventDispatcher $eventDispatcher,
         EndpointCollection $endpoints,
+        ConnectedRoomCollection $rooms,
         Logger $logger,
         ChatRoomIdentifier $roomIdentifier
     ) {
         $this->eventBuilder = $eventBuilder;
         $this->eventDispatcher = $eventDispatcher;
         $this->endpoints = $endpoints;
+        $this->rooms = $rooms;
         $this->logger = $logger;
         $this->roomIdentifier = $roomIdentifier;
     }
@@ -74,6 +78,7 @@ class Handler implements Websocket
             $this->logger->debug("Connection to {$this->roomIdentifier} established");
 
             $this->endpoints->set($this->roomIdentifier, $endpoint);
+            $this->rooms->add($this->roomIdentifier);
 
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
             // this seems to happen a lot while testing, I'm not sure if it's an issue with the server or us (it's
@@ -125,6 +130,8 @@ class Handler implements Websocket
     {
         try {
             $this->clearTimeoutWatcher();
+
+            $this->rooms->remove($this->roomIdentifier);
 
             $this->logger->debug("Connection to {$this->roomIdentifier} closed");
             yield $this->eventDispatcher->onDisconnect($this->roomIdentifier);

@@ -54,10 +54,10 @@ class EndpointURLResolver
         throw new \InvalidArgumentException('Invalid chat room identifier');
     }
 
-    private function getRoomFromArg($arg): ChatRoom
+    private function getRoomFromArg($arg): ChatRoomIdentifier
     {
         if ($arg instanceof ChatRoom) {
-            return $arg;
+            return $arg->getIdentifier();
         } else if ($arg instanceof ChatRoomIdentifier || is_string($arg)) {
             return $this->connectedRooms->get($arg);
         }
@@ -75,11 +75,11 @@ class EndpointURLResolver
         );
     }
 
-    private function getMainSiteEndpointURL(ChatRoom $room, int $endpoint, array $extraData): string
+    private function getMainSiteEndpointURL(ChatRoomIdentifier $room, int $endpoint, array $extraData): string
     {
         return sprintf(
             self::$endpointURLTemplates[$endpoint],
-            rtrim($this->sessions->getSessionForRoom($room->getIdentifier())->getMainSiteUrl(), '/'),
+            rtrim($this->sessions->getSessionForRoom($room)->getMainSiteUrl(), '/'),
             ...$extraData
         );
     }

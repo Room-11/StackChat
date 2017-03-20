@@ -4,10 +4,10 @@ namespace Room11\StackChat\Room;
 
 use const Room11\StackChat\ROOM_IDENTIFIER_EXPR;
 
-class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
+class ConnectedRoomCollection implements ConnectedRoomTracker
 {
     /**
-     * @var Room[][]
+     * @var Identifier[][]
      */
     private $rooms = [];
 
@@ -43,7 +43,7 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
         array_map([$this, 'add'], $rooms);
     }
 
-    public function add(Room $room)
+    public function add(Identifier $room)
     {
         list($host, $id) = $this->normalizeIdentifier($room);
 
@@ -69,10 +69,10 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param Room|Identifier|string $identifier
-     * @return null|Room
+     * @return Identifier
      * @throws InvalidRoomIdentifierException
      */
-    public function get($identifier)
+    public function get($identifier): Identifier
     {
         list($host, $id) = $this->normalizeIdentifier($identifier);
 
@@ -80,7 +80,7 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
             throw new InvalidRoomIdentifierException("Unknown room identifier: {$host}#{$id}");
         }
 
-        return $this->rooms[$host][$id] ?? null;
+        return $this->rooms[$host][$id];
     }
 
     /**
@@ -153,35 +153,6 @@ class ConnectedRoomCollection implements \Iterator, \ArrayAccess, \Countable
         if (null !== $key = key($this->rooms)) {
             reset($this->rooms[$key]);
         }
-    }
-
-    public function offsetExists($identifier)
-    {
-        return $this->contains($identifier);
-    }
-
-    public function offsetGet($identifier)
-    {
-        return $this->get($identifier);
-    }
-
-    public function offsetSet($identifier, $room)
-    {
-        if (!$room instanceof Room) {
-            throw new InvalidRoomIdentifierException("Rooms must be instances of " . Room::class);
-        }
-
-        list($host, $id) = $this->normalizeIdentifier($identifier);
-        if ($host !== $room->getIdentifier()->getHost() || $id !== $room->getIdentifier()->getId()) {
-            throw new InvalidRoomIdentifierException("Identifying key must match room identifier");
-        }
-
-        $this->add($room);
-    }
-
-    public function offsetUnset($identifier)
-    {
-        $this->remove($identifier);
     }
 
     public function count()
