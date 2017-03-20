@@ -2,6 +2,9 @@
 
 namespace Room11\StackChat\WebSocket;
 
+use Amp\Deferred;
+use Amp\Promise;
+use Amp\TimeoutException;
 use Amp\Websocket;
 use Amp\Websocket\Endpoint as WebSocketEndpoint;
 use Amp\Websocket\Message as WebSocketMessage;
@@ -35,6 +38,11 @@ class Handler implements Websocket
 
     private $timeoutWatcherId;
 
+    /**
+     * @var Deferred
+     */
+    private $timeoutDeferred;
+
     public function __construct(
         EventBuilder $eventBuilder,
         EventDispatcher $eventDispatcher,
@@ -57,19 +65,26 @@ class Handler implements Websocket
             $this->logger->debug("Cancelling timeout watcher #{$this->timeoutWatcherId}");
 
             cancel($this->timeoutWatcherId);
-            $this->timeoutWatcherId = null;
+            $this->timeoutDeferred->succeed();
+
+            $this->timeoutWatcherId = $this->timeoutDeferred = null;
         }
     }
 
-    private function setTimeoutWatcher(int $secs = self::HEARTBEAT_TIMEOUT_SECONDS)
+    private function setTimeoutWatcher(int $secs = self::HEARTBEAT_TIMEOUT_SECONDS): Promise
     {
+        $this->timeoutDeferred = new Deferred;
+
         $this->timeoutWatcherId = once(function() {
             $this->logger->debug("Connection to {$this->room} timed out");
 
+            $this->timeoutDeferred->fail(new TimeoutException);
             $this->endpoint->close();
         }, $secs * 1000);
 
         $this->logger->debug("Created timeout watcher #{$this->timeoutWatcherId}");
+
+        return $this->timeoutDeferred->promise();
     }
 
     public function onOpen(WebsocketEndpoint $endpoint, array $headers)
@@ -82,8 +97,14 @@ class Handler implements Websocket
 
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
             // this seems to happen a lot while testing, I'm not sure if it's an issue with the server or us (it's
-            // probably us)
-            $this->setTimeoutWatcher(2);
+            // probably us). This timeout is short so we'll wait for it before telling the consumer that we connected.
+            try {
+                yield $this->setTimeoutWatcher(2);
+            } catch (TimeoutException $e) {
+                return;
+            }
+
+            yield $this->eventDispatcher->onConnect($this->room);
         } catch (\Throwable $e) {
             $this->logger->error(
                 "Something went generally wrong while opening connection to {$this->room}: $e"
