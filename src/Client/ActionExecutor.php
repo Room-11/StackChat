@@ -142,7 +142,11 @@ class ActionExecutor
         $this->actionQueues[$key]->push($action);
 
         if (empty($this->runningLoops[$key])) {
-            resolve($this->executeActionsFromQueue($key));
+            resolve($this->executeActionsFromQueue($key))->when(function(?\Throwable $error) use($action) {
+                if ($error) {
+                    $action->fail($error);
+                }
+            });
         }
 
         return $action->promise();

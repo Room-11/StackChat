@@ -57,7 +57,11 @@ class Authenticator
         if (!$this->haveLoop) {
             /** @noinspection PhpVoidFunctionResultUsedInspection */
             /** @noinspection PhpParamsInspection */
-            resolve($this->executeActionsFromQueue());
+            resolve($this->executeActionsFromQueue())->when(function(?\Throwable $error) use($deferred) {
+                if ($error) {
+                    $deferred->fail($error);
+                }
+            });
         }
 
         return $deferred->promise();
