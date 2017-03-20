@@ -9,11 +9,11 @@ use Room11\StackChat\Room\Identifier;
 
 interface EventDispatcher
 {
-    function processWebSocketEvent(Event $event): Promise;
+    function onWebSocketEvent(Event $event): Promise;
 
-    function processMessageEvent(ChatMessage $message): Promise;
+    function onMessageEvent(ChatMessage $message): Promise;
 
-    function processConnect(Identifier $identifier): Promise;
+    function onConnect(Identifier $identifier): Promise;
 
-    function processDisconnect(Identifier $identifier): Promise;
+    function onDisconnect(Identifier $identifier): Promise;
 }

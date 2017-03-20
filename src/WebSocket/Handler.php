@@ -108,10 +108,10 @@ class Handler implements Websocket
             $this->logger->debug(count($events) . " events targeting {$this->roomIdentifier} to process");
 
             foreach ($events as $event) {
-                yield $this->eventDispatcher->processWebSocketEvent($event);
+                yield $this->eventDispatcher->onWebSocketEvent($event);
 
                 if ($event instanceof MessageEvent && !$event instanceof GlobalEvent) {
-                    $this->eventDispatcher->processMessageEvent(new ChatMessage($event));
+                    $this->eventDispatcher->onMessageEvent(new ChatMessage($event));
                 }
             }
         } catch (\Throwable $e) {
@@ -127,7 +127,7 @@ class Handler implements Websocket
             $this->clearTimeoutWatcher();
 
             $this->logger->debug("Connection to {$this->roomIdentifier} closed");
-            yield $this->eventDispatcher->processDisconnect($this->roomIdentifier);
+            yield $this->eventDispatcher->onDisconnect($this->roomIdentifier);
         } catch (\Throwable $e) {
             $this->logger->error(
                 "Something went generally wrong while handling closure of connection to {$this->roomIdentifier}: $e"
