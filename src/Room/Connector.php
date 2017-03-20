@@ -28,9 +28,9 @@ class Connector
         $this->handlerFactory = $handlerFactory;
     }
 
-    public function connect(Room $room, EventDispatcher $eventDispatcher, bool $permanent): Promise
+    public function connect(Room $room, EventDispatcher $eventDispatcher): Promise
     {
-        return resolve(function() use($room, $eventDispatcher, $permanent) {
+        return resolve(function() use($room, $eventDispatcher) {
             /** @var Session $session */
             $session = yield $this->authenticator->getRoomSessionInfo($room);
             $this->sessions->setSessionForRoom($room, $session);
