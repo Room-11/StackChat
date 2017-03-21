@@ -18,7 +18,7 @@ class EditMessage extends Action
             return self::SUCCESS;
         }
 
-        $errStr = 'A JSON response that I don\'t understand was received';
+        $errStr = 'A JSON response with an unexpected structure was received';
         $this->logger->error($errStr, ['response' => $response]);
         $this->fail(new MessageEditFailureException($errStr));
 

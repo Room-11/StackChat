@@ -55,7 +55,7 @@ class PostMessage extends Action
         }
 
         if (!array_key_exists('id', $response)) {
-            $this->logger->error('A JSON response that I don\'t understand was received', ['response' => $response]);
+            $this->logger->error('A JSON response with an unexpected structure was received', ['response' => $response]);
             $this->fail(new MessagePostFailureException("Invalid response from server"));
 
             return self::FAILURE;
@@ -65,7 +65,7 @@ class PostMessage extends Action
         // I think this happens when we repeat ourselves too quickly
         // todo: remove this if we don't get any more for a week or two (repeat message guard should prevent it)
         $delay = $attempt * 1000;
-        $this->logger->error("WARN: Got a null message post response, waiting for {$delay}ms before trying again");
+        $this->logger->warning("Got a null message post response, waiting for {$delay}ms before trying again");
 
         return $delay;
     }
