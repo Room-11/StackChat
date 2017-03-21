@@ -8,14 +8,21 @@ use Room11\StackChat\Room\Room;
 
 class PostedMessageTracker
 {
-    private const BUFFER_SIZE = 20;
+    private const DEFAULT_BUFFER_SIZE = 20;
+
+    private $bufferSize;
 
     /**
      * @var Deque[]
      */
     private $messages = [];
 
-    public function pushMessage(PostedMessage $message)
+    public function __construct(int $bufferSize = self::DEFAULT_BUFFER_SIZE)
+    {
+        $this->bufferSize = $bufferSize;
+    }
+
+    public function pushMessage(PostedMessage $message): void
     {
         $ident = $message->getRoom()->getIdentString();
 
@@ -25,16 +32,12 @@ class PostedMessageTracker
 
         $this->messages[$ident]->push($message);
 
-        if ($this->messages[$ident]->count() > self::BUFFER_SIZE) {
+        if ($this->messages[$ident]->count() > $this->bufferSize) {
             $this->messages[$ident]->shift();
         }
     }
 
-    /**
-     * @param Room $room
-     * @return PostedMessage
-     */
-    public function popMessage(Room $room)
+    public function popMessage(Room $room): ?PostedMessage
     {
         $ident = $room->getIdentString();
 
@@ -51,11 +54,7 @@ class PostedMessageTracker
         return $message;
     }
 
-    /**
-     * @param Room $room
-     * @return PostedMessage
-     */
-    public function peekMessage(Room $room)
+    public function peekMessage(Room $room): ?PostedMessage
     {
         $ident = $room->getIdentString();
 
@@ -77,10 +76,6 @@ class PostedMessageTracker
             : [];
     }
 
-    /**
-     * @param Room $room
-     * @return int
-     */
     public function getCount(Room $room): int
     {
         $ident = $room->getIdentString();
@@ -88,5 +83,19 @@ class PostedMessageTracker
         return isset($this->messages[$ident])
             ? $this->messages[$ident]->count()
             : 0;
+    }
+
+    public function getBufferSize(): int
+    {
+        return $this->bufferSize;
+    }
+
+    public function setBufferSize(int $bufferSize)
+    {
+        $this->bufferSize = $bufferSize;
+
+        foreach ($this->messages as $deque) {
+            $deque->allocate($bufferSize);
+        }
     }
 }
