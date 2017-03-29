@@ -450,7 +450,7 @@ class ChatClient implements Client
 
         $body = (new FormBody)
             ->addField("text", $text)
-            ->addField("fkey", (string)$this->sessions->getSessionForRoom($room)->getFKey());
+            ->addField("fkey", $this->sessions->getSessionForRoom($room)->getFKey());
 
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_EDIT_MESSAGE, $message->getId());
 
@@ -471,10 +471,12 @@ class ChatClient implements Client
      */
     public function pinOrUnpinMessage($messageOrId, Room $room = null): Promise
     {
+        /** @var int $messageId */
+        /** @var Room $room */
         list($messageId, $room) = $this->getMessageIDAndRoomPairFromArgs($messageOrId, $room);
 
         $body = (new FormBody)
-            ->addField("fkey", $room->getSession()->getFKey());
+            ->addField("fkey", $this->sessions->getSessionForRoom($room)->getFKey());
 
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_PIN_MESSAGE, $messageId);
 
@@ -495,10 +497,12 @@ class ChatClient implements Client
      */
     public function unstarMessage($messageOrId, Room $room = null): Promise
     {
+        /** @var int $messageId */
+        /** @var Room $room */
         list($messageId, $room) = $this->getMessageIDAndRoomPairFromArgs($messageOrId, $room);
 
         $body = (new FormBody)
-            ->addField("fkey", $room->getSession()->getFKey());
+            ->addField("fkey", $this->sessions->getSessionForRoom($room)->getFKey());
 
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_UNSTAR_MESSAGE, $messageId);
 
