@@ -24,13 +24,13 @@ class MainSiteUser
     {
         $xpath = new \DOMXPath($doc);
 
-        $twitterLink = $xpath->query("//li[span[" . xpath_html_class('icon-twitter') . "]]/a");
+        $twitterLink = $xpath->query("//li[svg[" . xpath_html_class('iconTwitter') . "]]/a");
         $twitterHandle = $twitterLink->length > 0
             ? ltrim(trim($twitterLink->item(0)->textContent), '@')
             : null;
 
         // cannot separate this because of static, bloody mancs.
-        $githubLink = $xpath->query("//li[span[" . xpath_html_class('icon-github') . "]]/a");
+        $githubLink = $xpath->query("//li[svg[" . xpath_html_class('iconGitHub') . "]]/a");
         $githubUsername = $githubLink->length > 0
             ? trim($githubLink->item(0)->textContent)
             : null;
