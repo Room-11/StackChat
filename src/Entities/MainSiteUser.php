@@ -50,7 +50,7 @@ class MainSiteUser
         return $this->githubUsername;
     }
 
-    private static function getUserLink($xpath, string $class)
+    private static function getUserLink($xpath, string $class): ?string
     {
         $link = $xpath->query("//li[svg[" . xpath_html_class($class) . "]]/a");
 
