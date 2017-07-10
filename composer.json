@@ -36,7 +36,7 @@
     "ext-intl": "*",
     "amphp/amp": "^1.2",
     "amphp/artax": "^2",
-    "amphp/websocket": "dev-master",
+    "amphp/websocket": "^0.1",
     "amphp/file": "0.1.*",
     "daverandom/exceptional-json": "^1.0",
     "php-ds/php-ds": "*",

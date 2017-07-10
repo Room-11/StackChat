@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b6c2be6e3b911a0b441499351964a1c2",
-    "content-hash": "6046a5539b984afab9fd018f054893db",
+    "content-hash": "f21dc87d175c04073d1c933e40d489c9",
     "packages": [
         {
             "name": "amphp/amp",
@@ -62,7 +61,7 @@
                 "non-blocking",
                 "promise"
             ],
-            "time": "2016-05-12 12:54:59"
+            "time": "2016-05-12T12:54:59+00:00"
         },
         {
             "name": "amphp/artax",
@@ -120,7 +119,7 @@
                 "parallel",
                 "rest"
             ],
-            "time": "2016-08-08 16:27:01"
+            "time": "2016-08-08T16:27:01+00:00"
         },
         {
             "name": "amphp/cache",
@@ -168,7 +167,7 @@
             ],
             "description": "A promise-aware caching API built on the amp concurrency framework",
             "homepage": "https://github.com/amphp/cache",
-            "time": "2015-09-08 22:26:20"
+            "time": "2015-09-08T22:26:20+00:00"
         },
         {
             "name": "amphp/dns",
@@ -238,7 +237,7 @@
                 "dns",
                 "resolve"
             ],
-            "time": "2017-02-05 22:17:40"
+            "time": "2017-02-05T22:17:40+00:00"
         },
         {
             "name": "amphp/file",
@@ -298,7 +297,7 @@
                 "non-blocking",
                 "static"
             ],
-            "time": "2016-10-01 17:43:52"
+            "time": "2016-10-01T17:43:52+00:00"
         },
         {
             "name": "amphp/process",
@@ -341,7 +340,7 @@
             ],
             "description": "Asynchronous process manager",
             "homepage": "https://github.com/amphp/process",
-            "time": "2016-09-24 10:49:26"
+            "time": "2016-09-24T10:49:26+00:00"
         },
         {
             "name": "amphp/socket",
@@ -396,11 +395,11 @@
                 "tcp",
                 "tls"
             ],
-            "time": "2016-07-18 22:03:24"
+            "time": "2016-07-18T22:03:24+00:00"
         },
         {
             "name": "amphp/websocket",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/websocket.git",
@@ -455,7 +454,7 @@
                 "non-blocking",
                 "websocket"
             ],
-            "time": "2016-11-16 14:26:15"
+            "time": "2016-11-16T14:26:15+00:00"
         },
         {
             "name": "amphp/windows-registry",
@@ -493,7 +492,7 @@
                 }
             ],
             "description": "Windows Registry Reader.",
-            "time": "2017-01-04 23:52:31"
+            "time": "2017-01-04T23:52:31+00:00"
         },
         {
             "name": "daverandom/exceptional-json",
@@ -528,7 +527,7 @@
                 }
             ],
             "description": "JSON encoding and decoding that throws exceptions on failure",
-            "time": "2016-05-04 15:52:54"
+            "time": "2016-05-04T15:52:54+00:00"
         },
         {
             "name": "daverandom/libdns",
@@ -561,7 +560,7 @@
             "keywords": [
                 "dns"
             ],
-            "time": "2016-04-29 20:47:45"
+            "time": "2016-04-29T20:47:45+00:00"
         },
         {
             "name": "php-ds/php-ds",
@@ -608,7 +607,7 @@
                 "php",
                 "polyfill"
             ],
-            "time": "2016-08-08 13:04:16"
+            "time": "2016-08-08T13:04:16+00:00"
         },
         {
             "name": "psr/log",
@@ -655,7 +654,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10 12:19:37"
+            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "room11/dom-utils",
@@ -690,7 +689,7 @@
                 }
             ],
             "description": "Utility functions for the PHP DOM extension",
-            "time": "2016-10-19 15:15:02"
+            "time": "2016-10-19T15:15:02+00:00"
         },
         {
             "name": "room11/openid",
@@ -732,7 +731,7 @@
                 }
             ],
             "description": "OpenID consumer",
-            "time": "2016-10-19 13:37:18"
+            "time": "2016-10-19T13:37:18+00:00"
         }
     ],
     "packages-dev": [
@@ -788,7 +787,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2015-06-14 21:17:01"
+            "time": "2015-06-14T21:17:01+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -830,7 +829,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2017-01-26 22:05:40"
+            "time": "2017-01-26T22:05:40+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -884,7 +883,7 @@
                 "reflection",
                 "static analysis"
             ],
-            "time": "2015-12-27 11:43:31"
+            "time": "2015-12-27T11:43:31+00:00"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -929,7 +928,7 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-            "time": "2016-09-30 07:12:33"
+            "time": "2016-09-30T07:12:33+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -976,7 +975,7 @@
                     "email": "me@mikevanriel.com"
                 }
             ],
-            "time": "2016-11-25 06:54:22"
+            "time": "2016-11-25T06:54:22+00:00"
         },
         {
             "name": "phpspec/prophecy",
@@ -1039,7 +1038,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2017-03-02 20:05:34"
+            "time": "2017-03-02T20:05:34+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -1102,7 +1101,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-03-06 14:22:16"
+            "time": "2017-03-06T14:22:16+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1149,7 +1148,7 @@
                 "filesystem",
                 "iterator"
             ],
-            "time": "2016-10-03 07:40:28"
+            "time": "2016-10-03T07:40:28+00:00"
         },
         {
             "name": "phpunit/php-text-template",
@@ -1190,7 +1189,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-06-21 13:50:34"
+            "time": "2015-06-21T13:50:34+00:00"
         },
         {
             "name": "phpunit/php-timer",
@@ -1239,7 +1238,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2017-02-26 11:10:40"
+            "time": "2017-02-26T11:10:40+00:00"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -1288,7 +1287,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2017-02-27 10:12:30"
+            "time": "2017-02-27T10:12:30+00:00"
         },
         {
             "name": "phpunit/phpunit",
@@ -1370,7 +1369,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-03-15 13:04:13"
+            "time": "2017-03-15T13:04:13+00:00"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -1429,7 +1428,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2017-03-03 06:30:20"
+            "time": "2017-03-03T06:30:20+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -1474,7 +1473,7 @@
             ],
             "description": "Looks up which function or method a line of code belongs to",
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
-            "time": "2017-03-04 06:30:41"
+            "time": "2017-03-04T06:30:41+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -1538,7 +1537,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2017-03-03 06:26:08"
+            "time": "2017-03-03T06:26:08+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -1590,7 +1589,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2015-12-08 07:14:41"
+            "time": "2015-12-08T07:14:41+00:00"
         },
         {
             "name": "sebastian/environment",
@@ -1640,7 +1639,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2016-11-26 07:53:53"
+            "time": "2016-11-26T07:53:53+00:00"
         },
         {
             "name": "sebastian/exporter",
@@ -1707,7 +1706,7 @@
                 "export",
                 "exporter"
             ],
-            "time": "2017-03-03 06:25:06"
+            "time": "2017-03-03T06:25:06+00:00"
         },
         {
             "name": "sebastian/global-state",
@@ -1758,7 +1757,7 @@
             "keywords": [
                 "global state"
             ],
-            "time": "2015-10-12 03:26:01"
+            "time": "2015-10-12T03:26:01+00:00"
         },
         {
             "name": "sebastian/object-enumerator",
@@ -1805,7 +1804,7 @@
             ],
             "description": "Traverses array structures and object graphs to enumerate all referenced objects",
             "homepage": "https://github.com/sebastianbergmann/object-enumerator/",
-            "time": "2017-03-12 15:17:29"
+            "time": "2017-03-12T15:17:29+00:00"
         },
         {
             "name": "sebastian/object-reflector",
@@ -1850,7 +1849,7 @@
             ],
             "description": "Allows reflection of object attributes, including inherited and non-public ones",
             "homepage": "https://github.com/sebastianbergmann/object-reflector/",
-            "time": "2017-03-12 15:10:22"
+            "time": "2017-03-12T15:10:22+00:00"
         },
         {
             "name": "sebastian/recursion-context",
@@ -1903,7 +1902,7 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "time": "2017-03-03 06:23:57"
+            "time": "2017-03-03T06:23:57+00:00"
         },
         {
             "name": "sebastian/resource-operations",
@@ -1945,7 +1944,7 @@
             ],
             "description": "Provides a list of PHP built-in functions that operate on resources",
             "homepage": "https://www.github.com/sebastianbergmann/resource-operations",
-            "time": "2015-07-28 20:34:47"
+            "time": "2015-07-28T20:34:47+00:00"
         },
         {
             "name": "sebastian/version",
@@ -1988,7 +1987,7 @@
             ],
             "description": "Library that helps with managing the version number of Git-hosted PHP projects",
             "homepage": "https://github.com/sebastianbergmann/version",
-            "time": "2016-10-03 07:35:21"
+            "time": "2016-10-03T07:35:21+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -2038,14 +2037,12 @@
                 "check",
                 "validate"
             ],
-            "time": "2016-11-23 20:04:58"
+            "time": "2016-11-23T20:04:58+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "amphp/websocket": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
