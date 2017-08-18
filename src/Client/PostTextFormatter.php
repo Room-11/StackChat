@@ -7,6 +7,8 @@ class PostTextFormatter implements TextFormatter
     private const ENCODING = 'UTF-8';
     private const PING_MATCH_EXPR = '#@((?:\p{L}|\p{N})(?:\p{L}|\p{N}|\.|-|_|\')*)#u';
     private const PING_REPLACEMENT = '@' . Utf8Chars::ZWNJ . '$1';
+    private const ESCAPE_EXPR = '/\\\\(.)/';
+    private const ESCAPE_SEQUENCES = ['n' => "\n"];
 
     /**
      * {@inheritdoc}
@@ -56,5 +58,14 @@ class PostTextFormatter implements TextFormatter
         }
 
         return mb_substr($text, 0, $pos, self::ENCODING) . Utf8Chars::ELLIPSIS;
+    }
+
+    public function interpolateEscapeSequences(string $string): string
+    {
+        return \preg_replace_callback(self::ESCAPE_EXPR, function($match) {
+            return \array_key_exists($match[1], self::ESCAPE_SEQUENCES)
+                ? self::ESCAPE_SEQUENCES[$match[1]]
+                : $match[0];
+        }, $string);
     }
 }

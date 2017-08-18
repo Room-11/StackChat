@@ -34,4 +34,12 @@ interface TextFormatter
      * @return string
      */
     function truncateText(string $text, int $length = self::TRUNCATION_LIMIT): string;
+
+    /**
+     * Interpolate escape sequences in the input string
+     *
+     * @param string $string
+     * @return string
+     */
+    function interpolateEscapeSequences(string $string): string;
 }
