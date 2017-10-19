@@ -23,19 +23,12 @@ class MainSiteUser
     public static function createFromDOMDocument(\DOMDocument $doc): MainSiteUser // very todo: remove horrible static ctor
     {
         $xpath = new \DOMXPath($doc);
+        $twitterHandle = ($link = ltrim(self::getUserLink($xpath, 'iconTwitter'), '@')) === '' ? null : $link;
 
-        $twitterLink = $xpath->query("//li[svg[" . xpath_html_class('iconTwitter') . "]]/a");
-        $twitterHandle = $twitterLink->length > 0
-            ? ltrim(trim($twitterLink->item(0)->textContent), '@')
-            : null;
-
-        // cannot separate this because of static, bloody mancs.
-        $githubLink = $xpath->query("//li[svg[" . xpath_html_class('iconGitHub') . "]]/a");
-        $githubUsername = $githubLink->length > 0
-            ? trim($githubLink->item(0)->textContent)
-            : null;
-
-        return new MainSiteUser($twitterHandle, $githubUsername);
+        return new MainSiteUser(
+            $twitterHandle,
+            self::getUserLink($xpath, 'iconGitHub')
+        );
     }
 
     public function __construct(string $twitterHandle = null, string $githubUsername = null)
@@ -55,5 +48,14 @@ class MainSiteUser
     public function getGithubUsername()
     {
         return $this->githubUsername;
+    }
+
+    private static function getUserLink($xpath, string $class): ?string
+    {
+        $link = $xpath->query("//li[svg[" . xpath_html_class($class) . "]]/a");
+
+        return $link->length > 0
+            ? trim($link->item(0)->textContent)
+            : null;
     }
 }
