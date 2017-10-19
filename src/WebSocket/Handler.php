@@ -85,7 +85,7 @@ class Handler implements Websocket
             // we expect a heartbeat message from the server immediately on connect, if we don't get one then try again
             // this seems to happen a lot while testing, I'm not sure if it's an issue with the server or us (it's
             // probably us).
-            $this->setTimeoutWatcher(2);
+            $this->setTimeoutWatcher();
 
             yield $this->eventDispatcher->onConnect($this->room);
         } catch (\Throwable $e) {
