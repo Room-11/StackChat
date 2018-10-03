@@ -74,13 +74,11 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
                 $result[$accessType] = $sectionEl !== null ? $this->parseRoomAccessSection($sectionEl) : [];
             }
 
-            $result[UserAccessType::SITE_MODERATOR] = yield $this->getMainSiteModerators($room);
-
             return $result;
         });
     }
 
-    private function getMainSiteModerators(Room $room): Promise
+    public function getMainSiteModerators(Room $room): Promise
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::MAINSITE_MODERATOR_LIST);
 
