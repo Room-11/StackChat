@@ -62,7 +62,7 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
 
-        return resolve(function() use($url, $room) {
+        return resolve(function() use($url) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($url);
             $doc = domdocument_load_html($response->getBody());
