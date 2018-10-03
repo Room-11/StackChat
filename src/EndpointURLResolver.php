@@ -37,6 +37,7 @@ class EndpointURLResolver
         Endpoint::CHAT_USER_INFO_EXTRA         => 'https://%1$s/users/thumbs/%3$d?showUsage=false',
 
         Endpoint::MAINSITE_USER                => '%1$s/users/%2$d?tab=profile',
+        Endpoint::MAINSITE_MODERATOR_LIST      => '%1$s/users?tab=moderators',
     ];
 
     private $connectedRooms;

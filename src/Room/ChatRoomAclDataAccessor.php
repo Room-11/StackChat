@@ -5,7 +5,10 @@ namespace Room11\StackChat\Room;
 use Amp\Artax\HttpClient;
 use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
+use function Amp\resolve;
+use function Room11\DOMUtils\domdocument_load_html;
 use Room11\DOMUtils\ElementNotFoundException;
+use function Room11\DOMUtils\xpath_get_elements;
 use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
@@ -59,11 +62,10 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
 
-        return \Amp\resolve(function() use($url) {
+        return resolve(function() use($url, $room) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($url);
-
-            $doc = \Room11\DOMUtils\domdocument_load_html($response->getBody());
+            $doc = domdocument_load_html($response->getBody());
 
             $result = [];
 
@@ -72,8 +74,39 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
                 $result[$accessType] = $sectionEl !== null ? $this->parseRoomAccessSection($sectionEl) : [];
             }
 
+            $result[UserAccessType::SITE_MODERATOR] = yield $this->getMainSiteModerators($room);
+
             return $result;
         });
+    }
+
+    private function getMainSiteModerators(Room $room): Promise
+    {
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::MAINSITE_MODERATOR_LIST);
+
+        $promise = $this->httpClient->request($url);
+        return resolve(function() use ($promise) {
+            /** @var HttpResponse $response */
+            $response = yield $promise;
+
+            $doc = domdocument_load_html($response->getBody());
+            try {
+                $userElements = xpath_get_elements($doc, "//div[@id='user-browser']//div[contains(concat(' ', normalize-space(@class), ' '), ' user-details ')]//a[1]");
+            } catch (ElementNotFoundException $e) {
+                return [];
+            }
+
+            $moderators = [];
+
+            foreach ($userElements as $userElement) {
+                preg_match('#/users/(?<id>\d+)/#', $userElement->getAttribute('href'), $urlParts);
+                $moderators[(int) $urlParts['id']] = trim($userElement->textContent);
+            }
+
+            return $moderators;
+
+        });
+
     }
 
     /**

@@ -40,4 +40,5 @@ abstract class Endpoint
     // main site info
     const MAINSITE_URLS_START          = 500;
     const MAINSITE_USER                = 501;
+    const MAINSITE_MODERATOR_LIST      = 502;
 }
