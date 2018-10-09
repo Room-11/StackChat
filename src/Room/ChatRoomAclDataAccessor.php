@@ -9,6 +9,8 @@ use Room11\DOMUtils\ElementNotFoundException;
 use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
+use function Room11\DOMUtils\domdocument_load_html;
+use function Room11\DOMUtils\xpath_get_elements;
 
 class ChatRoomAclDataAccessor implements AclDataAccessor
 {
@@ -62,8 +64,7 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
         return \Amp\resolve(function() use($url) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($url);
-
-            $doc = \Room11\DOMUtils\domdocument_load_html($response->getBody());
+            $doc = domdocument_load_html($response->getBody());
 
             $result = [];
 
@@ -74,6 +75,35 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
 
             return $result;
         });
+    }
+
+    public function getMainSiteModerators(Room $room): Promise
+    {
+        $url = $this->urlResolver->getEndpointURL($room, Endpoint::MAINSITE_MODERATOR_LIST);
+
+        $promise = $this->httpClient->request($url);
+        return \Amp\resolve(function() use ($promise) {
+            /** @var HttpResponse $response */
+            $response = yield $promise;
+
+            $doc = domdocument_load_html($response->getBody());
+            try {
+                $userElements = xpath_get_elements($doc, "//div[@id='user-browser']//div[contains(concat(' ', normalize-space(@class), ' '), ' user-details ')]//a[1]");
+            } catch (ElementNotFoundException $e) {
+                return [];
+            }
+
+            $moderators = [];
+
+            foreach ($userElements as $userElement) {
+                preg_match('#/users/(?<id>\d+)/#', $userElement->getAttribute('href'), $urlParts);
+                $moderators[(int) $urlParts['id']] = trim($userElement->textContent);
+            }
+
+            return $moderators;
+
+        });
+
     }
 
     /**

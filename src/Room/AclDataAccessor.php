@@ -20,6 +20,12 @@ interface AclDataAccessor
 
     /**
      * @param Room $room
+     * @return Promise<string[]>
+     */
+    function getMainSiteModerators(Room $room): Promise;
+
+    /**
+     * @param Room $room
      * @param int $userId
      * @return Promise<bool>
      */

@@ -7,4 +7,5 @@ class UserAccessType
     const READ_ONLY = 'read-only';
     const READ_WRITE = 'read-write';
     const OWNER = 'owner';
+    const SITE_MODERATOR = 'site-moderator';
 }
