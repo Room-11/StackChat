@@ -5,13 +5,12 @@ namespace Room11\StackChat\Room;
 use Amp\Artax\HttpClient;
 use Amp\Artax\Response as HttpResponse;
 use Amp\Promise;
-use function Amp\resolve;
-use function Room11\DOMUtils\domdocument_load_html;
 use Room11\DOMUtils\ElementNotFoundException;
-use function Room11\DOMUtils\xpath_get_elements;
 use Room11\StackChat\Auth\ActiveSessionTracker;
 use Room11\StackChat\Endpoint;
 use Room11\StackChat\EndpointURLResolver;
+use function Room11\DOMUtils\domdocument_load_html;
+use function Room11\DOMUtils\xpath_get_elements;
 
 class ChatRoomAclDataAccessor implements AclDataAccessor
 {
@@ -62,7 +61,7 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
     {
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::CHATROOM_INFO_ACCESS);
 
-        return resolve(function() use($url) {
+        return \Amp\resolve(function() use($url) {
             /** @var HttpResponse $response */
             $response = yield $this->httpClient->request($url);
             $doc = domdocument_load_html($response->getBody());
@@ -83,7 +82,7 @@ class ChatRoomAclDataAccessor implements AclDataAccessor
         $url = $this->urlResolver->getEndpointURL($room, Endpoint::MAINSITE_MODERATOR_LIST);
 
         $promise = $this->httpClient->request($url);
-        return resolve(function() use ($promise) {
+        return \Amp\resolve(function() use ($promise) {
             /** @var HttpResponse $response */
             $response = yield $promise;
 
